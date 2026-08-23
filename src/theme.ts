@@ -1,5 +1,5 @@
 export const theme = {
-  primary: "cyan",
+  primary: "#F59E0B",
   secondary: "blue",
   accent: "green",
   muted: "gray",
