@@ -17,9 +17,7 @@ const nameArt = figlet.textSync("PRITHVI", {
 });
 
 function Rule() {
-  return (
-    <Text dimColor>{"─".repeat(104)}</Text>
-  );
+  return <Text dimColor>{"─".repeat(104)}</Text>;
 }
 
 function SectionTitle({ title }: { title: string }) {
@@ -52,28 +50,30 @@ export default function Home({ selectedIndex }: HomeProps) {
           <Text bold>PR</Text>
         </Box>
 
-        <Navigation
-          selectedIndex={selectedIndex}
-          activePage="home"
-        />
+        <Box flexDirection="row" gap={1}>
+          <Navigation
+            selectedIndex={selectedIndex}
+            activePage="home"
+          />
 
-        <Box
-          borderStyle="round"
-          borderColor={theme.muted}
-          paddingX={1}
-        >
-          <Text>◐</Text>
+          <Box
+            borderStyle="round"
+            borderColor={theme.muted}
+            paddingX={1}
+          >
+            <Text>◐</Text>
+          </Box>
         </Box>
       </Box>
 
-      <Box marginTop={1}>
+      <Box marginTop={0}>
         <Rule />
       </Box>
 
       <Box
         width="100%"
-        alignItems="center"
-        marginTop={1}
+        alignItems="flex-start"
+        marginTop={0}
       >
         <Text bold color={theme.primary}>
           {nameArt}
@@ -83,7 +83,7 @@ export default function Home({ selectedIndex }: HomeProps) {
       <Box
         width="100%"
         justifyContent="space-between"
-        marginTop={1}
+        marginTop={0}
       >
         <Box flexDirection="column" width="68%">
           <Text bold>{profile.title}</Text>
@@ -96,7 +96,7 @@ export default function Home({ selectedIndex }: HomeProps) {
         </Box>
       </Box>
 
-      <Box marginTop={2} flexDirection="column">
+      <Box marginTop={1} flexDirection="column">
         <SectionTitle title="about" />
         <Text> </Text>
         <Text>{profile.summary}</Text>
@@ -106,7 +106,7 @@ export default function Home({ selectedIndex }: HomeProps) {
         </Text>
       </Box>
 
-      <Box marginTop={2} flexDirection="column">
+      <Box marginTop={1} flexDirection="column">
         <SectionTitle title="stack" />
         <Text> </Text>
         {skills.map((group) => (
@@ -119,7 +119,7 @@ export default function Home({ selectedIndex }: HomeProps) {
         ))}
       </Box>
 
-      <Box marginTop={2} flexDirection="column">
+      <Box marginTop={1} flexDirection="column">
         <SectionTitle title="highlights" />
         <Text> </Text>
         {profile.highlights.map((highlight) => (
