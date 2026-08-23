@@ -1,4 +1,4 @@
-import { Box, Text, useWindowSize } from "ink";
+import { Box, Text } from "ink";
 import { useEffect, useMemo, useState } from "react";
 import figlet from "figlet";
 
@@ -14,7 +14,6 @@ const greetings = [
 const GREETING_INTERVAL = 900;
 
 export default function Welcome() {
-  const { rows, columns } = useWindowSize();
   const [greetingIndex, setGreetingIndex] = useState(0);
 
   useEffect(() => {
@@ -27,22 +26,20 @@ export default function Welcome() {
     return () => clearInterval(interval);
   }, []);
 
-  const nameArt = useMemo(() => {
-    const font = columns >= 70 ? "ANSI Shadow" : "Small";
-
-    return figlet.textSync("PRITHVI", {
-      font,
-      horizontalLayout: "default",
-      verticalLayout: "default",
-    });
-  }, [columns]);
-
-  const screenHeight = Math.max(rows - 1, 16);
+  const nameArt = useMemo(
+    () =>
+      figlet.textSync("PRITHVI", {
+        font: "ANSI Shadow",
+        horizontalLayout: "default",
+        verticalLayout: "default",
+      }),
+    [],
+  );
 
   return (
     <Box
       width="100%"
-      height={screenHeight}
+      height="100%"
       flexDirection="column"
       paddingX={2}
     >
