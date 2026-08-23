@@ -1,10 +1,11 @@
-import { Box, Text, useWindowSize } from "ink";
+import { Box, Text } from "ink";
 import figlet from "figlet";
 import { useState } from "react";
 
 import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
 import StatusBar from "../components/StatusBar.js";
+import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
 import { experience } from "../data/experience.js";
@@ -33,10 +34,10 @@ function SectionTitle({ title }: { title: string }) {
 }
 
 export default function Home({ selectedIndex }: HomeProps) {
-  const { rows } = useWindowSize();
+  const { rows } = useTerminalSize();
   const [progress, setProgress] = useState(0);
   const currentRole = experience[0];
-  const viewportHeight = Math.max(8, rows - 6);
+  const viewportHeight = Math.max(8, rows - 7);
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -44,8 +45,7 @@ export default function Home({ selectedIndex }: HomeProps) {
         <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
           <Text bold>PR</Text>
         </Box>
-
-        <Box flexDirection="row" gap={1}>
+        <Box flexDirection="row" gap={1} flexShrink={1}>
           <Navigation selectedIndex={selectedIndex} activePage="home" />
           <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
             <Text>◐</Text>
@@ -55,23 +55,18 @@ export default function Home({ selectedIndex }: HomeProps) {
 
       <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
 
-      <ScrollViewport
-        height={viewportHeight}
-        contentHeight={64}
-        onProgressChange={setProgress}
-      >
+      <ScrollViewport height={viewportHeight} contentHeight={78} onProgressChange={setProgress}>
         <Box width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start">
             <Text bold color={theme.primary}>{nameArt}</Text>
           </Box>
 
           <Box width="100%" justifyContent="space-between" marginTop={0}>
-            <Box flexDirection="column" width="72%">
+            <Box flexDirection="column" width="70%">
               <Text bold>{profile.title}</Text>
               <Text dimColor wrap="wrap">{profile.tagline}</Text>
             </Box>
-
-            <Box flexDirection="column" width="24%">
+            <Box flexDirection="column" width="26%">
               <Text color={theme.primary}>● AVAILABLE</Text>
               <Text wrap="wrap">{profile.location}</Text>
             </Box>
@@ -82,9 +77,7 @@ export default function Home({ selectedIndex }: HomeProps) {
             <Text> </Text>
             <Text wrap="wrap">{profile.summary}</Text>
             <Text> </Text>
-            <Text dimColor wrap="wrap">
-              I enjoy turning product ideas into reliable systems, from clean interfaces and APIs to the infrastructure that keeps them fast.
-            </Text>
+            <Text dimColor wrap="wrap">I enjoy turning product ideas into reliable systems, from clean interfaces and APIs to the infrastructure that keeps them fast.</Text>
           </Box>
 
           <Box marginTop={1} flexDirection="column">
@@ -101,9 +94,7 @@ export default function Home({ selectedIndex }: HomeProps) {
             <Text> </Text>
             <Text wrap="wrap">{currentRole.description}</Text>
             <Text> </Text>
-            {currentRole.highlights.map((highlight) => (
-              <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>
-            ))}
+            {currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}
           </Box>
 
           <Box marginTop={1} flexDirection="column">
@@ -111,12 +102,8 @@ export default function Home({ selectedIndex }: HomeProps) {
             <Text> </Text>
             {skills.map((group) => (
               <Box key={group.title} flexDirection="row" width="100%">
-                <Box width={16} flexShrink={0}>
-                  <Text dimColor>{group.title.toLowerCase()}</Text>
-                </Box>
-                <Box flexGrow={1}>
-                  <Text wrap="wrap">{group.skills.join(" · ")}</Text>
-                </Box>
+                <Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box>
+                <Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box>
               </Box>
             ))}
           </Box>
@@ -124,9 +111,7 @@ export default function Home({ selectedIndex }: HomeProps) {
           <Box marginTop={1} flexDirection="column">
             <SectionTitle title="highlights" />
             <Text> </Text>
-            {profile.highlights.map((highlight) => (
-              <Text key={highlight} wrap="wrap">· {highlight}</Text>
-            ))}
+            {profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}
           </Box>
         </Box>
       </ScrollViewport>
