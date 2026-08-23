@@ -5,35 +5,36 @@ import { theme } from "../theme.js";
 
 interface NavigationProps {
   selectedIndex: number;
+  activePage?: string;
 }
 
 export default function Navigation({
   selectedIndex,
+  activePage,
 }: NavigationProps) {
   return (
-    <Box flexDirection="column">
-      <Text bold>
-        NAVIGATION
-      </Text>
-
-      <Text> </Text>
-
+    <Box flexDirection="row" gap={1}>
       {navigationItems.map((item, index) => {
-        const selected = index === selectedIndex;
+        const selected = activePage
+          ? item.page === activePage
+          : index === selectedIndex;
 
         return (
-          <Text
+          <Box
             key={item.page}
-            color={
-              selected
-                ? theme.primary
-                : undefined
+            borderStyle="round"
+            borderColor={
+              selected ? theme.primary : theme.muted
             }
-            bold={selected}
+            paddingX={1}
           >
-            {selected ? "❯ " : "  "}
-            {item.label}
-          </Text>
+            <Text
+              bold={selected}
+              color={selected ? theme.primary : undefined}
+            >
+              {item.label}
+            </Text>
+          </Box>
         );
       })}
     </Box>
