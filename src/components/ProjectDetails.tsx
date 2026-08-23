@@ -1,6 +1,7 @@
 import { Box, Text } from "ink";
 
 import type { Project } from "../data/projects.js";
+import { theme } from "../theme.js";
 
 interface ProjectDetailsProps {
   project: Project;
@@ -11,8 +12,8 @@ export default function ProjectDetails({
 }: ProjectDetailsProps) {
   return (
     <Box flexDirection="column">
-      <Text bold>
-        {project.name.toUpperCase()}
+      <Text bold color={theme.primary}>
+        {project.name}
       </Text>
 
       <Text> </Text>
@@ -23,7 +24,9 @@ export default function ProjectDetails({
 
       <Text> </Text>
 
-      <Text bold>STACK</Text>
+      <Text bold color={theme.primary}>
+        STACK
+      </Text>
 
       <Text dimColor>
         {project.stack.join(" • ")}
@@ -31,17 +34,23 @@ export default function ProjectDetails({
 
       <Text> </Text>
 
-      <Text bold>HIGHLIGHTS</Text>
+      <Text bold color={theme.primary}>
+        HIGHLIGHTS
+      </Text>
+
+      {project.highlights.map(
+        (highlight) => (
+          <Text key={highlight}>
+            • {highlight}
+          </Text>
+        )
+      )}
 
       <Text> </Text>
 
-      {project.highlights.map((highlight) => (
-        <Text key={highlight}>
-          • {highlight}
-        </Text>
-      ))}
-
-      <Text> </Text>
+      <Text bold color={theme.primary}>
+        LINKS
+      </Text>
 
       {project.links.github && (
         <Text>

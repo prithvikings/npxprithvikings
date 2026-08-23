@@ -1,15 +1,41 @@
 import { Box, Text } from "ink";
 
+import { contact } from "../data/contact.js";
+import { theme } from "../theme.js";
+
 export default function Contact() {
   return (
     <Box flexDirection="column">
-      <Text bold>CONTACT</Text>
+      <Text bold color={theme.primary}>
+        CONTACT
+      </Text>
 
       <Text> </Text>
 
-      <Text>Email: your-email@example.com</Text>
-      <Text>GitHub: github.com/prithvikings</Text>
-      <Text>LinkedIn: linkedin.com/in/prithvikings</Text>
+      <Text>
+        Want to build something together?
+      </Text>
+
+      <Text> </Text>
+
+      <Text bold>GitHub</Text>
+      <Text dimColor>
+        {contact.github}
+      </Text>
+
+      <Text> </Text>
+
+      <Text bold>LinkedIn</Text>
+      <Text dimColor>
+        {contact.linkedin}
+      </Text>
+
+      <Text> </Text>
+
+      <Text bold>Website</Text>
+      <Text dimColor>
+        {contact.website}
+      </Text>
     </Box>
   );
 }

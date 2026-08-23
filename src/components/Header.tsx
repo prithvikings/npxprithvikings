@@ -1,18 +1,21 @@
 import { Box, Text } from "ink";
 
+import { profile } from "../data/profile.js";
+import { theme } from "../theme.js";
+
 export default function Header() {
   return (
-    <Box flexDirection="column" marginBottom={1}>
-      <Text bold>
+    <Box flexDirection="column">
+      <Text bold color={theme.primary}>
         PRITHVI RAJ
       </Text>
 
-      <Text>
-        Full Stack Developer
+      <Text color={theme.secondary}>
+        {profile.title}
       </Text>
 
       <Text dimColor>
-        Building products, solving problems, breaking things.
+        {profile.tagline}
       </Text>
     </Box>
   );

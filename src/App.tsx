@@ -1,11 +1,11 @@
-import { Box, Text } from "ink";
+import { Text } from "ink";
 import { useState } from "react";
 
-import Header from "./components/Header.js";
-import Navigation from "./components/Navigation.js";
+import TerminalLayout from "./components/TerminalLayout.js";
 import PageRenderer from "./components/PageRenderer.js";
 import ProjectList from "./components/ProjectList.js";
 import ProjectDetails from "./components/ProjectDetails.js";
+import Home from "./pages/Home.js";
 
 import {
   usePortfolioInput,
@@ -36,25 +36,19 @@ export default function App() {
   });
 
   const renderContent = () => {
-    if (view === "home") {
-      return (
-        <>
-          <Navigation
-            selectedIndex={selectedIndex}
-          />
-
-          <Text> </Text>
-
-          <Text dimColor>
-            ↑ ↓ Navigate • Enter Select • Q Quit
-          </Text>
-        </>
-      );
-    }
+if (view === "home") {
+  return (
+    <TerminalLayout footer="↑ ↓ Navigate • Enter Select • Q Quit">
+      <Home
+        selectedIndex={selectedIndex}
+      />
+    </TerminalLayout>
+  );
+}
 
     if (view === "project-list") {
       return (
-        <>
+        <TerminalLayout footer="↑ ↓ Navigate • Enter Select • ESC Back">
           <Text bold>PROJECTS</Text>
 
           <Text> </Text>
@@ -62,59 +56,34 @@ export default function App() {
           <ProjectList
             selectedIndex={selectedProjectIndex}
           />
-
-          <Text> </Text>
-
-          <Text dimColor>
-            ↑ ↓ Navigate • Enter Select • ESC Back
-          </Text>
-        </>
+        </TerminalLayout>
       );
     }
 
     if (view === "project-details") {
       return (
-        <>
+        <TerminalLayout footer="ESC Back">
           <ProjectDetails
-            project={
-              projects[selectedProjectIndex]
-            }
+            project={projects[selectedProjectIndex]}
           />
-
-          <Text> </Text>
-
-          <Text dimColor>
-            ESC Back
-          </Text>
-        </>
+        </TerminalLayout>
       );
     }
 
-    return (
-      <>
-        <PageRenderer
-          page={view}
-        />
+    if (
+      view === "about" ||
+      view === "experience" ||
+      view === "contact"
+    ) {
+      return (
+        <TerminalLayout footer="ESC Back • Q Quit">
+          <PageRenderer page={view} />
+        </TerminalLayout>
+      );
+    }
 
-        <Text> </Text>
-
-        <Text dimColor>
-          ESC Back • Q Quit
-        </Text>
-      </>
-    );
+    return null;
   };
 
-  return (
-    <Box
-      flexDirection="column"
-      padding={1}
-    >
-      <Header />
-
-      <Text> </Text>
-
-      {renderContent()}
-    </Box>
-  );
+  return renderContent();
 }

@@ -1,51 +1,67 @@
 import { Box, Text } from "ink";
 
 import { experience } from "../data/experience.js";
+import { theme } from "../theme.js";
 
 export default function Experience() {
   return (
     <Box flexDirection="column">
-      <Text bold>EXPERIENCE</Text>
+      <Text bold color={theme.primary}>
+        EXPERIENCE
+      </Text>
 
       <Text> </Text>
 
-      {experience.map((job) => (
+      {experience.map((item) => (
         <Box
-          key={`${job.company}-${job.period}`}
+          key={`${item.company}-${item.role}`}
           flexDirection="column"
           marginBottom={1}
         >
           <Text bold>
-            {job.role} — {job.company}
+            {item.role}
+          </Text>
+
+          <Text color={theme.secondary}>
+            {item.company}
           </Text>
 
           <Text dimColor>
-            {job.period}
-            {job.location
-              ? ` • ${job.location}`
+            {item.period}
+            {item.location
+              ? ` • ${item.location}`
               : ""}
           </Text>
 
           <Text> </Text>
 
           <Text>
-            {job.description}
+            {item.description}
           </Text>
 
           <Text> </Text>
 
-          <Text>
-            <Text bold>Stack: </Text>
-            {job.stack.join(" • ")}
+          <Text bold color={theme.primary}>
+            STACK
+          </Text>
+
+          <Text dimColor>
+            {item.stack.join(" • ")}
           </Text>
 
           <Text> </Text>
 
-          {job.highlights.map((highlight) => (
-            <Text key={highlight}>
-              • {highlight}
-            </Text>
-          ))}
+          <Text bold color={theme.primary}>
+            HIGHLIGHTS
+          </Text>
+
+          {item.highlights.map(
+            (highlight) => (
+              <Text key={highlight}>
+                • {highlight}
+              </Text>
+            )
+          )}
         </Box>
       ))}
     </Box>

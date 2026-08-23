@@ -1,46 +1,49 @@
 import { Box, Text } from "ink";
 
+import Navigation from "../components/Navigation.js";
+
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
+import { theme } from "../theme.js";
 
-export default function Home() {
+interface HomeProps {
+  selectedIndex: number;
+}
+
+export default function Home({
+  selectedIndex,
+}: HomeProps) {
   return (
     <Box flexDirection="column">
-      <Text bold>
-        {profile.name}
-      </Text>
-
       <Text>
-        {profile.title}
-      </Text>
-
-      <Text dimColor>
-        {profile.tagline}
+        {profile.summary}
       </Text>
 
       <Text> </Text>
 
-      <Text bold>SKILLS</Text>
+      <Text bold color={theme.primary}>
+        STACK
+      </Text>
 
       <Text> </Text>
 
       {skills.map((group) => (
-        <Box key={group.title}>
-          <Text>
-            <Text bold>
-              {group.title}:{" "}
-            </Text>
-
-            <Text dimColor>
-              {group.skills.join(" • ")}
-            </Text>
+        <Text key={group.title}>
+          <Text bold>
+            {group.title}:{" "}
           </Text>
-        </Box>
+
+          <Text dimColor>
+            {group.skills.join(" • ")}
+          </Text>
+        </Text>
       ))}
 
       <Text> </Text>
 
-      <Text bold>HIGHLIGHTS</Text>
+      <Text bold color={theme.primary}>
+        HIGHLIGHTS
+      </Text>
 
       <Text> </Text>
 
@@ -49,6 +52,12 @@ export default function Home() {
           • {highlight}
         </Text>
       ))}
+
+      <Text> </Text>
+
+      <Navigation
+        selectedIndex={selectedIndex}
+      />
     </Box>
   );
 }

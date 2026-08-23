@@ -1,8 +1,6 @@
-import { Box, Text } from "ink";
-
 import About from "../pages/About.js";
-import Experience from "../pages/Experience.js";
 import Contact from "../pages/Contact.js";
+import Experience from "../pages/Experience.js";
 
 export type Page =
   | "about"
@@ -27,10 +25,6 @@ export default function PageRenderer({
       return <Contact />;
 
     default:
-      return (
-        <Box>
-          <Text>Page not found.</Text>
-        </Box>
-      );
+      return null;
   }
 }
