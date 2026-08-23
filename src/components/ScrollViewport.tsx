@@ -5,6 +5,7 @@ import { theme } from "../theme.js";
 
 interface ScrollViewportProps {
   children: ReactNode;
+  height?: number;
   onProgressChange?: (progress: number) => void;
 }
 
@@ -12,10 +13,11 @@ const SCROLL_STEP = 2;
 
 export default function ScrollViewport({
   children,
+  height,
   onProgressChange,
 }: ScrollViewportProps) {
   const { rows } = useWindowSize();
-  const viewportHeight = Math.max(6, rows - 7);
+  const viewportHeight = height ?? Math.max(6, rows - 7);
   const contentRef = useRef<any>(null);
   const { height: contentHeight } = useBoxMetrics(contentRef);
   const [offset, setOffset] = useState(0);
@@ -27,10 +29,7 @@ export default function ScrollViewport({
 
   useEffect(() => {
     const nextOffset = Math.min(offset, maxOffset);
-
-    if (nextOffset !== offset) {
-      setOffset(nextOffset);
-    }
+    if (nextOffset !== offset) setOffset(nextOffset);
   }, [maxOffset, offset]);
 
   useEffect(() => {
@@ -38,29 +37,12 @@ export default function ScrollViewport({
   }, [onProgressChange, progress]);
 
   useInput((_input, key) => {
-    if (key.upArrow) {
-      setOffset((current) => Math.max(0, current - SCROLL_STEP));
-    }
-
-    if (key.downArrow) {
-      setOffset((current) => Math.min(maxOffset, current + SCROLL_STEP));
-    }
-
-    if (key.pageUp) {
-      setOffset((current) => Math.max(0, current - viewportHeight));
-    }
-
-    if (key.pageDown) {
-      setOffset((current) => Math.min(maxOffset, current + viewportHeight));
-    }
-
-    if (key.home) {
-      setOffset(0);
-    }
-
-    if (key.end) {
-      setOffset(maxOffset);
-    }
+    if (key.upArrow) setOffset((current) => Math.max(0, current - SCROLL_STEP));
+    if (key.downArrow) setOffset((current) => Math.min(maxOffset, current + SCROLL_STEP));
+    if (key.pageUp) setOffset((current) => Math.max(0, current - viewportHeight));
+    if (key.pageDown) setOffset((current) => Math.min(maxOffset, current + viewportHeight));
+    if (key.home) setOffset(0);
+    if (key.end) setOffset(maxOffset);
   });
 
   const hasOverflow = maxOffset > 0;
@@ -78,6 +60,7 @@ export default function ScrollViewport({
       position="relative"
       overflow="hidden"
       flexDirection="column"
+      flexShrink={0}
     >
       <Box
         ref={contentRef}
@@ -90,30 +73,19 @@ export default function ScrollViewport({
         {children}
       </Box>
 
-      <Box
-        position="absolute"
-        right={0}
-        top={0}
-        width={1}
-        height={viewportHeight}
-        flexDirection="column"
-      >
+      <Box position="absolute" right={0} top={0} width={1} height={viewportHeight}>
         <Text dimColor color={theme.muted}>
           {"│\n".repeat(Math.max(0, viewportHeight - 1))}│
         </Text>
       </Box>
 
-      <Box
-        position="absolute"
-        right={0}
-        top={thumbTop}
-        width={1}
-        height={thumbHeight}
-      >
-        <Text color={theme.muted}>
-          {"┃\n".repeat(Math.max(0, thumbHeight - 1))}┃
-        </Text>
-      </Box>
+      {hasOverflow && (
+        <Box position="absolute" right={0} top={thumbTop} width={1} height={thumbHeight}>
+          <Text color={theme.muted}>
+            {"┃\n".repeat(Math.max(0, thumbHeight - 1))}┃
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }
