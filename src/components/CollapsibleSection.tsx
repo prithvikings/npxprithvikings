@@ -30,16 +30,13 @@ export default function CollapsibleSection({
   useLayoutEffect(() => {
     const layout = headerRef.current?.yogaNode?.getComputedLayout();
     if (!layout) return;
-
     onPosition(id, layout.top, layout.height);
-    if (isFocused) {
-      onFocused(index, layout.top, layout.height);
-    }
+    if (isFocused) onFocused(index, layout.top, layout.height);
   });
 
   useInput(
     (_input, key) => {
-      if (key.return) onToggle(id);
+      if (key.return && !key.ctrl) onToggle(id);
     },
     { isActive: isFocused },
   );
@@ -55,17 +52,12 @@ export default function CollapsibleSection({
         aria-label={`${title} section`}
         aria-state={{ expanded: !collapsed, selected: isFocused }}
       >
-        <Text color={isFocused ? theme.primary : theme.muted}>
-          {collapsed ? "▸ " : "▾ "}
-        </Text>
-        <Text bold={isFocused || !collapsed} color={isFocused ? theme.primary : undefined}>
-          {title}
-        </Text>
+        <Text color={isFocused ? theme.primary : theme.muted}>{collapsed ? "▸ " : "▾ "}</Text>
+        <Text bold={isFocused || !collapsed} color={isFocused ? theme.primary : undefined}>{title}</Text>
         <Box flexGrow={1} marginLeft={1}>
           <Text dimColor>────────────────────────────────────────────────────────────────</Text>
         </Box>
       </Box>
-
       {!collapsed && <Box flexDirection="column">{children}</Box>}
     </Box>
   );
