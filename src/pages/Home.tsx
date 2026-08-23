@@ -28,7 +28,7 @@ const nameArt = figlet.textSync("PRITHVI", {
 
 export default function Home({ selectedIndex }: HomeProps) {
   const { rows } = useTerminalSize();
-  const { focus, activeId } = useFocusManager();
+  const { focus } = useFocusManager();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -202,7 +202,7 @@ export default function Home({ selectedIndex }: HomeProps) {
       </Box>
 
       <StatusBar progress={progress} />
-      {activeId && <Text dimColor>tab select • enter fold • click toggle • focused: {activeId.replace("section-", "")}</Text>}
+      <Text dimColor>tab select • enter fold • click toggle</Text>
     </Box>
   );
 }
