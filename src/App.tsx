@@ -31,28 +31,16 @@ export default function App({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedProjectIndex, setSelectedProjectIndex] = useState(0);
   const [selectedContactIndex, setSelectedContactIndex] = useState(0);
-  const [scrollOffset, setScrollOffset] = useState(0);
-
-  // The home page is intentionally a virtual viewport. Keeping the scroll
-  // state here ensures the root input handler owns arrow-key navigation and
-  // avoids nested useInput handlers competing for the same key events.
-  const homeScrollMax = 50;
 
   usePortfolioInput({
     view,
     selectedIndex,
     selectedProjectIndex,
     selectedContactIndex,
-    scrollOffset,
-    scrollMax: homeScrollMax,
-    setView: (nextView) => {
-      setScrollOffset(0);
-      setView(nextView);
-    },
+    setView,
     setSelectedIndex,
     setSelectedProjectIndex,
     setSelectedContactIndex,
-    setScrollOffset,
   });
 
   const renderContent = () => {
@@ -63,11 +51,7 @@ export default function App({
     if (view === "home") {
       return (
         <TerminalLayout showHeader={false}>
-          <Home
-            selectedIndex={selectedIndex}
-            scrollOffset={scrollOffset}
-            scrollMax={homeScrollMax}
-          />
+          <Home selectedIndex={selectedIndex} />
         </TerminalLayout>
       );
     }
