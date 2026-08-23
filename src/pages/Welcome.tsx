@@ -23,7 +23,6 @@ interface WelcomeProps {
 }
 
 export default function Welcome({ onContinue }: WelcomeProps) {
-  const [greetingIndex, setGreetingIndex] = useState(0);
   const [greetingText, setGreetingText] = useState("");
   const [shineProgress, setShineProgress] = useState(-1);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
@@ -59,9 +58,7 @@ export default function Welcome({ onContinue }: WelcomeProps) {
           return;
         }
 
-        const nextIndex = (index + 1) % greetings.length;
-        setGreetingIndex(nextIndex);
-        typeGreeting(nextIndex);
+        typeGreeting((index + 1) % greetings.length);
       };
 
       typeNext();
@@ -117,11 +114,12 @@ export default function Welcome({ onContinue }: WelcomeProps) {
     }
 
     const columns = stdout.columns ?? 80;
-    const rows = Math.max((stdout.rows ?? 24) - 1, 12);
+    const terminalHeight = Math.max(
+      (stdout.rows ?? 24) - 1,
+      12,
+    );
 
-    // Enable SGR mouse reporting. Terminals that do not support it
-    // simply ignore these escape sequences and keyboard input still works.
-    stdout.write("\x1b[?1000h\x1b[?1006h");
+    stdout.write("\x1b[?1003h\x1b[?1006h");
 
     const nameArt = figlet.textSync("PRITHVI", {
       font: "ANSI Shadow",
@@ -135,22 +133,15 @@ export default function Welcome({ onContinue }: WelcomeProps) {
     );
 
     const nameHeight = nameLines.length;
-    const nameWidth = Math.max(
-      ...nameLines.map((line) => line.length),
-    );
-
-    // The content area is vertically centered above the footer.
-    // Keep the hit target slightly generous so mouse interaction feels natural.
-    const contentHeight =
-      nameHeight + 1 + 2 + 1 + 2 + 1;
+    const contentHeight = nameHeight + 16;
     const contentTop = Math.max(
       1,
-      Math.floor((rows - contentHeight) / 2) + 1,
+      Math.floor((terminalHeight - contentHeight) / 2) + 1,
     );
-    const buttonTop =
-      contentTop + nameHeight + 1 + 2 + 1;
+
+    const buttonTop = contentTop + nameHeight + 7;
     const buttonHeight = 3;
-    const buttonWidth = 12;
+    const buttonWidth = 13;
     const buttonLeft = Math.floor(
       (columns - buttonWidth) / 2,
     ) + 1;
@@ -184,7 +175,7 @@ export default function Welcome({ onContinue }: WelcomeProps) {
 
     return () => {
       stdin.off("data", handleMouse);
-      stdout.write("\x1b[?1006l\x1b[?1000l");
+      stdout.write("\x1b[?1003l\x1b[?1006l");
     };
   }, [onContinue]);
 
