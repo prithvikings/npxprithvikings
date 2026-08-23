@@ -1,22 +1,31 @@
 import { Box, Text } from "ink";
 
-import { profile } from "../data/profile.js";
 import { theme } from "../theme.js";
 
 export default function Header() {
   return (
-    <Box flexDirection="column">
-      <Text bold color={theme.primary}>
-        PRITHVI RAJ
-      </Text>
+    <Box
+      width="100%"
+      justifyContent="space-between"
+      alignItems="center"
+    >
+      <Box
+        borderStyle="round"
+        borderColor={theme.muted}
+        paddingX={1}
+      >
+        <Text bold>PR</Text>
+      </Box>
 
-      <Text color={theme.secondary}>
-        {profile.title}
-      </Text>
+      <Text dimColor>terminal portfolio</Text>
 
-      <Text dimColor>
-        {profile.tagline}
-      </Text>
+      <Box
+        borderStyle="round"
+        borderColor={theme.muted}
+        paddingX={1}
+      >
+        <Text>◐</Text>
+      </Box>
     </Box>
   );
 }

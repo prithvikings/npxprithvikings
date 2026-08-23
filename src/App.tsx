@@ -55,10 +55,6 @@ export default function App({
   });
 
   const renderContent = () => {
-    // -------------------------
-    // WELCOME
-    // -------------------------
-
     if (view === "welcome") {
       return (
         <Welcome
@@ -67,59 +63,31 @@ export default function App({
       );
     }
 
-    // -------------------------
-    // HOME
-    // -------------------------
-
     if (view === "home") {
       return (
-        <TerminalLayout footer="↑ ↓ Navigate • Enter Select • Q Quit">
-          <Home
-            selectedIndex={selectedIndex}
-          />
+        <TerminalLayout footer="↑ ↓ Navigate • Enter Select • Q Quit" showHeader={false}>
+          <Home selectedIndex={selectedIndex} />
         </TerminalLayout>
       );
     }
-
-    // -------------------------
-    // PROJECT LIST
-    // -------------------------
 
     if (view === "project-list") {
       return (
         <TerminalLayout footer="↑ ↓ Navigate • Enter Select • ESC Back">
-          <Text bold>
-            PROJECTS
-          </Text>
-
+          <Text bold>PROJECTS</Text>
           <Text> </Text>
-
-          <ProjectList
-            selectedIndex={selectedProjectIndex}
-          />
+          <ProjectList selectedIndex={selectedProjectIndex} />
         </TerminalLayout>
       );
     }
-
-    // -------------------------
-    // PROJECT DETAILS
-    // -------------------------
 
     if (view === "project-details") {
       return (
         <TerminalLayout footer="ESC Back">
-          <ProjectDetails
-            project={
-              projects[selectedProjectIndex]
-            }
-          />
+          <ProjectDetails project={projects[selectedProjectIndex]} />
         </TerminalLayout>
       );
     }
-
-    // -------------------------
-    // OTHER PAGES
-    // -------------------------
 
     if (
       view === "about" ||
@@ -130,9 +98,7 @@ export default function App({
         <TerminalLayout footer="ESC Back • Q Quit">
           <PageRenderer
             page={view}
-            selectedContactIndex={
-              selectedContactIndex
-            }
+            selectedContactIndex={selectedContactIndex}
           />
         </TerminalLayout>
       );
