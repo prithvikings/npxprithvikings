@@ -1,11 +1,12 @@
-import { Box, Text, useBoxMetrics, useInput, useWindowSize } from "ink";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Box, Text, useInput, useWindowSize } from "ink";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { theme } from "../theme.js";
 
 interface ScrollViewportProps {
   children: ReactNode;
   height?: number;
+  contentHeight?: number;
   onProgressChange?: (progress: number) => void;
 }
 
@@ -14,23 +15,20 @@ const SCROLL_STEP = 2;
 export default function ScrollViewport({
   children,
   height,
+  contentHeight = 64,
   onProgressChange,
 }: ScrollViewportProps) {
   const { rows } = useWindowSize();
   const viewportHeight = height ?? Math.max(6, rows - 7);
-  const contentRef = useRef<any>(null);
-  const { height: contentHeight } = useBoxMetrics(contentRef);
   const [offset, setOffset] = useState(0);
-
   const maxOffset = Math.max(0, contentHeight - viewportHeight);
   const progress = maxOffset === 0
     ? 0
     : Math.round((offset / maxOffset) * 100);
 
   useEffect(() => {
-    const nextOffset = Math.min(offset, maxOffset);
-    if (nextOffset !== offset) setOffset(nextOffset);
-  }, [maxOffset, offset]);
+    setOffset((current) => Math.min(current, maxOffset));
+  }, [maxOffset]);
 
   useEffect(() => {
     onProgressChange?.(progress);
@@ -63,7 +61,6 @@ export default function ScrollViewport({
       flexShrink={0}
     >
       <Box
-        ref={contentRef}
         width="100%"
         flexDirection="column"
         flexShrink={0}
