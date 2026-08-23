@@ -1,4 +1,4 @@
-import { Box, Text, type DOMElement, useFocusManager, useInput } from "ink";
+import { Box, Text, type DOMElement, useFocusManager, useInput, useStdin, useStdout } from "ink";
 import figlet from "figlet";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -29,6 +29,8 @@ const nameArt = figlet.textSync("PRITHVI", {
 export default function Home({ selectedIndex }: HomeProps) {
   const { rows } = useTerminalSize();
   const { focus } = useFocusManager();
+  const { stdin } = useStdin();
+  const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -36,10 +38,21 @@ export default function Home({ selectedIndex }: HomeProps) {
   const sectionPositions = useRef<Record<string, SectionPosition>>({});
   const viewportRef = useRef<DOMElement | null>(null);
   const contentRef = useRef<DOMElement | null>(null);
+  const scrollOffsetRef = useRef(0);
+  const maxScrollOffsetRef = useRef(0);
+  const viewportTopRef = useRef(0);
+  const viewportHeightRef = useRef(0);
   const currentRole = experience[0];
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
   const maxScrollOffset = Math.max(0, contentHeight - viewportHeight);
+
+  useEffect(() => {
+    scrollOffsetRef.current = scrollOffset;
+    maxScrollOffsetRef.current = maxScrollOffset;
+    viewportTopRef.current = viewportTop;
+    viewportHeightRef.current = viewportHeight;
+  }, [scrollOffset, maxScrollOffset, viewportTop, viewportHeight]);
 
   useLayoutEffect(() => {
     const viewportLayout = viewportRef.current?.yogaNode?.getComputedLayout();
@@ -71,49 +84,82 @@ export default function Home({ selectedIndex }: HomeProps) {
   };
 
   useEffect(() => {
-    const stdin = process.stdin;
-    const stdout = process.stdout;
+    if (!stdin || !stdout) return;
+
     let remainder = "";
     stdout.write("\x1b[?1000h\x1b[?1006h");
+
+    const applyMouseScroll = (direction: "up" | "down") => {
+      setScrollOffset((current) => {
+        const next = direction === "up"
+          ? current - MOUSE_SCROLL_STEP
+          : current + MOUSE_SCROLL_STEP;
+        return Math.max(0, Math.min(maxScrollOffsetRef.current, next));
+      });
+    };
 
     const handleMouseData = (chunk: Buffer | string) => {
       const data = remainder + chunk.toString();
       remainder = "";
-      const mousePattern = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
-      let match: RegExpExecArray | null;
-      let lastIndex = 0;
+      let consumedUntil = 0;
 
-      while ((match = mousePattern.exec(data)) !== null) {
-        lastIndex = mousePattern.lastIndex;
+      // SGR mouse protocol: ESC [ < button ; x ; y M/m
+      const sgrPattern = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
+      let match: RegExpExecArray | null;
+
+      while ((match = sgrPattern.exec(data)) !== null) {
+        consumedUntil = sgrPattern.lastIndex;
         const button = Number(match[1]);
         const mouseX = Number(match[2]) - 1;
         const mouseY = Number(match[3]) - 1;
 
         if (button === 64) {
-          setScrollOffset((current) => Math.max(0, current - MOUSE_SCROLL_STEP));
+          applyMouseScroll("up");
           continue;
         }
         if (button === 65) {
-          setScrollOffset((current) => Math.min(maxScrollOffset, current + MOUSE_SCROLL_STEP));
+          applyMouseScroll("down");
           continue;
         }
 
         if (button === 0 && match[4] === "M") {
-          if (mouseY < viewportTop || mouseY >= viewportTop + viewportHeight || mouseX < 0) continue;
-          for (const id of SECTION_IDS) {
-            const position = sectionPositions.current[id];
-            if (!position) continue;
-            const top = viewportTop - scrollOffset + position.top;
-            if (mouseY >= top && mouseY < top + position.height) {
-              focus(id);
-              toggleSection(id);
-              break;
+          const currentViewportTop = viewportTopRef.current;
+          const currentViewportHeight = viewportHeightRef.current;
+          const currentOffset = scrollOffsetRef.current;
+
+          if (
+            mouseY >= currentViewportTop &&
+            mouseY < currentViewportTop + currentViewportHeight &&
+            mouseX >= 0
+          ) {
+            for (const id of SECTION_IDS) {
+              const position = sectionPositions.current[id];
+              if (!position) continue;
+              const top = currentViewportTop - currentOffset + position.top;
+              if (mouseY >= top && mouseY < top + position.height) {
+                focus(id);
+                toggleSection(id);
+                break;
+              }
             }
           }
         }
       }
 
-      const trailingEscape = data.slice(lastIndex);
+      // Windows Terminal normally uses SGR, but keep the legacy X10 wheel
+      // protocol as a fallback for terminals that don't emit SGR events.
+      const legacyStart = Math.max(0, consumedUntil);
+      const legacyData = data.slice(legacyStart);
+      let legacyIndex = 0;
+      while ((legacyIndex = legacyData.indexOf("\x1b[M", legacyIndex)) !== -1) {
+        if (legacyIndex + 6 > legacyData.length) break;
+        const button = legacyData.charCodeAt(legacyIndex + 3) - 32;
+        if (button === 64) applyMouseScroll("up");
+        if (button === 65) applyMouseScroll("down");
+        legacyIndex += 6;
+      }
+
+      const trailingEscape = data.slice(consumedUntil);
       if (/\x1b(?:\[)?(?:<[^M]*?)?$/.test(trailingEscape)) remainder = trailingEscape;
     };
 
@@ -122,7 +168,7 @@ export default function Home({ selectedIndex }: HomeProps) {
       stdin.off("data", handleMouseData);
       stdout.write("\x1b[?1006l\x1b[?1000l");
     };
-  }, [focus, maxScrollOffset, scrollOffset, viewportHeight, viewportTop]);
+  }, [focus, stdin, stdout]);
 
   useInput((input, key) => {
     if (key.downArrow || key.pageDown || input === "j") {
