@@ -1,5 +1,9 @@
 export const navigationItems = [
   {
+    label: "Home",
+    page: "home",
+  },
+  {
     label: "About",
     page: "about",
   },
