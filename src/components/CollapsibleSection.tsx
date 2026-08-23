@@ -1,5 +1,5 @@
-import { Box, Text, useFocus, useInput } from "ink";
-import { useEffect, type ReactNode } from "react";
+import { Box, Text, useBoxMetrics, useFocus, useInput } from "ink";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { theme } from "../theme.js";
 
@@ -9,7 +9,8 @@ interface CollapsibleSectionProps {
   title: string;
   collapsed: boolean;
   onToggle: (id: string) => void;
-  onFocused: (index: number) => void;
+  onFocused: (index: number, top: number, height: number) => void;
+  onPosition: (id: string, top: number, height: number) => void;
   children: ReactNode;
 }
 
@@ -20,18 +21,27 @@ export default function CollapsibleSection({
   collapsed,
   onToggle,
   onFocused,
+  onPosition,
   children,
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({
     id,
     autoFocus: index === 0,
   });
+  const headerRef = useRef(null);
+  const metrics = useBoxMetrics(headerRef);
 
   useEffect(() => {
-    if (isFocused) {
-      onFocused(index);
+    if (!metrics.hasMeasured) {
+      return;
     }
-  }, [index, isFocused, onFocused]);
+
+    onPosition(id, metrics.top, metrics.height);
+
+    if (isFocused) {
+      onFocused(index, metrics.top, metrics.height);
+    }
+  }, [id, index, isFocused, metrics.hasMeasured, metrics.top, metrics.height, onFocused, onPosition]);
 
   useInput(
     (_input, key) => {
@@ -45,11 +55,13 @@ export default function CollapsibleSection({
   return (
     <Box flexDirection="column" marginTop={1}>
       <Box
+        ref={headerRef}
         width="100%"
+        height={1}
         flexDirection="row"
         aria-role="button"
         aria-label={`${title} section`}
-        aria-state={{ expanded: !collapsed }}
+        aria-state={{ expanded: !collapsed, selected: isFocused }}
       >
         <Text color={isFocused ? theme.primary : theme.muted}>
           {collapsed ? "▸ " : "▾ "}
