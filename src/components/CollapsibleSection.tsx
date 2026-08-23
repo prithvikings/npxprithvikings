@@ -1,5 +1,5 @@
 import { Box, Text, type DOMElement, useFocus, useInput } from "ink";
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 
 import { theme } from "../theme.js";
 
@@ -26,24 +26,27 @@ export default function CollapsibleSection({
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({ id, autoFocus: index === 0 });
   const headerRef = useRef<DOMElement | null>(null);
-  const wasFocusedRef = useRef(false);
+  const layoutRef = useRef({ top: 0, height: 1 });
 
+  // Keep the section's current position up to date without causing a focus /
+  // scroll feedback loop.
   useLayoutEffect(() => {
     const layout = headerRef.current?.yogaNode?.getComputedLayout();
     if (!layout) return;
 
+    layoutRef.current = { top: layout.top, height: layout.height };
     onPosition(id, layout.top, layout.height);
-
-    // Only auto-scroll when focus actually moves onto this section.
-    // Calling onFocused on every layout pass creates a feedback loop:
-    // scrolling changes the layout, the focused section re-runs this effect,
-    // and it forces the scroll offset back toward the selected section.
-    if (isFocused && !wasFocusedRef.current) {
-      onFocused(index, layout.top, layout.height);
-    }
-
-    wasFocusedRef.current = isFocused;
   });
+
+  // Scroll only when keyboard/tab focus actually enters this section. This is
+  // deliberately separate from layout measurement so ordinary scrolling does
+  // not re-trigger the auto-scroll logic.
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const { top, height } = layoutRef.current;
+    onFocused(index, top, height);
+  }, [isFocused, index, onFocused]);
 
   useInput(
     (_input, key) => {
