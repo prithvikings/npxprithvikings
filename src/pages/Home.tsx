@@ -74,10 +74,9 @@ export default function Home({ selectedIndex }: HomeProps) {
     pendingFocusRef.current = id;
   }, []);
 
-  // Resolve a newly focused section against the latest measured layout. The
-  // section positions are in content-space, so the calculation remains valid
-  // regardless of the current scroll offset. Only scroll when the header is
-  // actually outside the viewport; never reset an already-valid scroll.
+  // A focus change should never move a manually positioned viewport unless
+  // the newly selected section is actually outside that viewport. The target
+  // is the minimum scroll needed to expose the whole section header.
   useLayoutEffect(() => {
     const id = pendingFocusRef.current;
     if (!id) return;
@@ -86,19 +85,25 @@ export default function Home({ selectedIndex }: HomeProps) {
     if (!position) return;
 
     pendingFocusRef.current = null;
+    const viewportHeightNow = viewportHeightRef.current;
+
     setScrollOffset((current) => {
-      const viewportHeightNow = viewportHeightRef.current;
-      const top = position.top;
-      const bottom = position.top + position.height;
       const visibleTop = current;
       const visibleBottom = current + viewportHeightNow;
+      const sectionTop = position.top;
+      const sectionBottom = position.top + position.height;
 
-      if (top < visibleTop) {
-        return Math.max(0, Math.min(maxScrollOffsetRef.current, top));
+      if (sectionTop < visibleTop) {
+        return Math.max(0, Math.min(maxScrollOffsetRef.current, sectionTop));
       }
-      if (bottom > visibleBottom) {
-        return Math.max(0, Math.min(maxScrollOffsetRef.current, bottom - viewportHeightNow));
+
+      if (sectionBottom > visibleBottom) {
+        return Math.max(
+          0,
+          Math.min(maxScrollOffsetRef.current, sectionBottom - viewportHeightNow),
+        );
       }
+
       return current;
     });
   });
@@ -255,13 +260,13 @@ export default function Home({ selectedIndex }: HomeProps) {
               </Box>
             </CollapsibleSection>
 
-            <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}>
+            <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onPosition={handlePosition}>
               <Box marginTop={1} flexDirection="column">
                 {skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}
               </Box>
             </CollapsibleSection>
 
-            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}>
+            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onPosition={handlePosition}>
               <Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box>
             </CollapsibleSection>
           </Box>
