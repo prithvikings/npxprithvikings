@@ -74,9 +74,6 @@ export default function Home({ selectedIndex }: HomeProps) {
     pendingFocusRef.current = id;
   }, []);
 
-  // A focus change should never move a manually positioned viewport unless
-  // the newly selected section is actually outside that viewport. The target
-  // is the minimum scroll needed to expose the whole section header.
   useLayoutEffect(() => {
     const id = pendingFocusRef.current;
     if (!id) return;
@@ -98,10 +95,7 @@ export default function Home({ selectedIndex }: HomeProps) {
       }
 
       if (sectionBottom > visibleBottom) {
-        return Math.max(
-          0,
-          Math.min(maxScrollOffsetRef.current, sectionBottom - viewportHeightNow),
-        );
+        return Math.max(0, Math.min(maxScrollOffsetRef.current, sectionBottom - viewportHeightNow));
       }
 
       return current;
@@ -114,52 +108,29 @@ export default function Home({ selectedIndex }: HomeProps) {
 
   useEffect(() => {
     if (!stdin || !stdout) return;
-
     let remainder = "";
     stdout.write("\x1b[?1000h\x1b[?1006h");
-
     const applyMouseScroll = (direction: "up" | "down") => {
-      setScrollOffset((current) => {
-        const next = direction === "up"
-          ? current - MOUSE_SCROLL_STEP
-          : current + MOUSE_SCROLL_STEP;
-        return Math.max(0, Math.min(maxScrollOffsetRef.current, next));
-      });
+      setScrollOffset((current) => Math.max(0, Math.min(maxScrollOffsetRef.current, direction === "up" ? current - MOUSE_SCROLL_STEP : current + MOUSE_SCROLL_STEP)));
     };
-
     const handleMouseData = (chunk: Buffer | string) => {
       const data = remainder + chunk.toString();
       remainder = "";
       let consumedUntil = 0;
-
       const sgrPattern = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
       let match: RegExpExecArray | null;
-
       while ((match = sgrPattern.exec(data)) !== null) {
         consumedUntil = sgrPattern.lastIndex;
         const button = Number(match[1]);
         const mouseX = Number(match[2]) - 1;
         const mouseY = Number(match[3]) - 1;
-
-        if (button === 64) {
-          applyMouseScroll("up");
-          continue;
-        }
-        if (button === 65) {
-          applyMouseScroll("down");
-          continue;
-        }
-
+        if (button === 64) { applyMouseScroll("up"); continue; }
+        if (button === 65) { applyMouseScroll("down"); continue; }
         if (button === 0 && match[4] === "M") {
           const currentViewportTop = viewportTopRef.current;
           const currentViewportHeight = viewportHeightRef.current;
           const currentOffset = scrollOffsetRef.current;
-
-          if (
-            mouseY >= currentViewportTop &&
-            mouseY < currentViewportTop + currentViewportHeight &&
-            mouseX >= 0
-          ) {
+          if (mouseY >= currentViewportTop && mouseY < currentViewportTop + currentViewportHeight && mouseX >= 0) {
             for (const id of SECTION_IDS) {
               const position = sectionPositions.current[id];
               if (!position) continue;
@@ -173,7 +144,6 @@ export default function Home({ selectedIndex }: HomeProps) {
           }
         }
       }
-
       const legacyStart = Math.max(0, consumedUntil);
       const legacyData = data.slice(legacyStart);
       let legacyIndex = 0;
@@ -184,11 +154,9 @@ export default function Home({ selectedIndex }: HomeProps) {
         if (button === 65) applyMouseScroll("down");
         legacyIndex += 6;
       }
-
       const trailingEscape = data.slice(consumedUntil);
       if (/\x1b(?:\[)?(?:<[^M]*?)?$/.test(trailingEscape)) remainder = trailingEscape;
     };
-
     stdin.on("data", handleMouseData);
     return () => {
       stdin.off("data", handleMouseData);
@@ -220,59 +188,23 @@ export default function Home({ selectedIndex }: HomeProps) {
           <Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text>◐</Text></Box>
         </Box>
       </Box>
-
       <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
-
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}>
           <Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
             <Box width="100%" alignItems="flex-start"><Text bold color={theme.primary}>{nameArt}</Text></Box>
             <Box width="100%" justifyContent="space-between" marginTop={0}>
-              <Box flexDirection="column" width="70%">
-                <Text bold>{profile.title}</Text>
-                <Text dimColor wrap="wrap">{profile.tagline}</Text>
-              </Box>
-              <Box flexDirection="column" width="26%">
-                <Text color={theme.primary}>● AVAILABLE</Text>
-                <Text wrap="wrap">{profile.location}</Text>
-              </Box>
+              <Box flexDirection="column" width="70%"><Text bold>{profile.title}</Text><Text dimColor wrap="wrap">{profile.tagline}</Text></Box>
+              <Box flexDirection="column" width="26%"><Text color={theme.primary}>● AVAILABLE</Text><Text wrap="wrap">{profile.location}</Text></Box>
             </Box>
-
-            <CollapsibleSection id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}>
-              <Box marginTop={1} flexDirection="column">
-                <Text wrap="wrap">{profile.summary}</Text>
-                {profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}
-              </Box>
-            </CollapsibleSection>
-
-            <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}>
-              <Box marginTop={1} flexDirection="column">
-                <Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box>
-                <Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box>
-                <Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>
-                {currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}
-              </Box>
-            </CollapsibleSection>
-
-            <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}>
-              <Box marginTop={1} flexDirection="column">
-                {featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}
-              </Box>
-            </CollapsibleSection>
-
-            <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onPosition={handlePosition}>
-              <Box marginTop={1} flexDirection="column">
-                {skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}
-              </Box>
-            </CollapsibleSection>
-
-            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onPosition={handlePosition}>
-              <Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box>
-            </CollapsibleSection>
+            <CollapsibleSection id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onPosition={handlePosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
           </Box>
         </ScrollViewport>
       </Box>
-
       <StatusBar progress={progress} />
       <Text dimColor>tab select • enter fold • click toggle</Text>
     </Box>
