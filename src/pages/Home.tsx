@@ -1,7 +1,10 @@
-import { Box, Text } from "ink";
+import { Box, Text, useWindowSize } from "ink";
 import figlet from "figlet";
+import { useState } from "react";
 
 import Navigation from "../components/Navigation.js";
+import ScrollViewport from "../components/ScrollViewport.js";
+import StatusBar from "../components/StatusBar.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
 import { experience } from "../data/experience.js";
@@ -19,20 +22,25 @@ const nameArt = figlet.textSync("PRITHVI", {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <Box flexDirection="row" width="100%">
+    <Box width="100%" flexDirection="row">
       <Text color={theme.primary}>▾ </Text>
       <Text bold>{title}</Text>
-      <Text dimColor> {"─".repeat(Math.max(4, 76 - title.length))}</Text>
+      <Box flexGrow={1} marginLeft={1}>
+        <Text dimColor>────────────────────────────────────────────────────────────────</Text>
+      </Box>
     </Box>
   );
 }
 
 export default function Home({ selectedIndex }: HomeProps) {
+  const { rows } = useWindowSize();
+  const [progress, setProgress] = useState(0);
   const currentRole = experience[0];
+  const viewportHeight = Math.max(8, rows - 11);
 
   return (
-    <Box width="100%" flexDirection="column" paddingBottom={1}>
-      <Box width="100%" justifyContent="space-between" alignItems="center">
+    <Box width="100%" flexDirection="column" flexShrink={0}>
+      <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}>
         <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
           <Text bold>PR</Text>
         </Box>
@@ -45,73 +53,81 @@ export default function Home({ selectedIndex }: HomeProps) {
         </Box>
       </Box>
 
-      <Text dimColor>{"─".repeat(84)}</Text>
+      <Text dimColor>────────────────────────────────────────────────────────────────────────────────────</Text>
 
-      <Box width="100%" alignItems="flex-start">
-        <Text bold color={theme.primary}>{nameArt}</Text>
-      </Box>
-
-      <Box width="100%" justifyContent="space-between" marginTop={0}>
-        <Box flexDirection="column" width="72%">
-          <Text bold>{profile.title}</Text>
-          <Text dimColor>{profile.tagline}</Text>
-        </Box>
-
-        <Box flexDirection="column" width="24%">
-          <Text color={theme.primary}>● AVAILABLE</Text>
-          <Text>{profile.location}</Text>
-        </Box>
-      </Box>
-
-      <Box marginTop={1} flexDirection="column">
-        <SectionTitle title="about" />
-        <Text> </Text>
-        <Text>{profile.summary}</Text>
-        <Text> </Text>
-        <Text dimColor>
-          I enjoy turning product ideas into reliable systems, from clean interfaces and APIs to the infrastructure that keeps them fast.
-        </Text>
-      </Box>
-
-      <Box marginTop={1} flexDirection="column">
-        <SectionTitle title="experience" />
-        <Text> </Text>
-        <Box justifyContent="space-between">
-          <Text bold>{currentRole.company}</Text>
-          <Text dimColor>{currentRole.period}</Text>
-        </Box>
-        <Box justifyContent="space-between">
-          <Text dimColor>{currentRole.role}</Text>
-          <Text dimColor>{currentRole.location}</Text>
-        </Box>
-        <Text> </Text>
-        <Text>{currentRole.description}</Text>
-        <Text> </Text>
-        {currentRole.highlights.map((highlight) => (
-          <Text key={highlight} dimColor>· {highlight}</Text>
-        ))}
-      </Box>
-
-      <Box marginTop={1} flexDirection="column">
-        <SectionTitle title="stack" />
-        <Text> </Text>
-        {skills.map((group) => (
-          <Box key={group.title} flexDirection="row">
-            <Box width={16}>
-              <Text dimColor>{group.title.toLowerCase()}</Text>
-            </Box>
-            <Text>{group.skills.join(" · ")}</Text>
+      <ScrollViewport height={viewportHeight} onProgressChange={setProgress}>
+        <Box width="100%" flexDirection="column" paddingRight={1}>
+          <Box width="100%" alignItems="flex-start">
+            <Text bold color={theme.primary}>{nameArt}</Text>
           </Box>
-        ))}
-      </Box>
 
-      <Box marginTop={1} flexDirection="column">
-        <SectionTitle title="highlights" />
-        <Text> </Text>
-        {profile.highlights.map((highlight) => (
-          <Text key={highlight}>· {highlight}</Text>
-        ))}
-      </Box>
+          <Box width="100%" justifyContent="space-between" marginTop={0}>
+            <Box flexDirection="column" width="72%">
+              <Text bold>{profile.title}</Text>
+              <Text dimColor wrap="wrap">{profile.tagline}</Text>
+            </Box>
+
+            <Box flexDirection="column" width="24%">
+              <Text color={theme.primary}>● AVAILABLE</Text>
+              <Text wrap="wrap">{profile.location}</Text>
+            </Box>
+          </Box>
+
+          <Box marginTop={1} flexDirection="column">
+            <SectionTitle title="about" />
+            <Text> </Text>
+            <Text wrap="wrap">{profile.summary}</Text>
+            <Text> </Text>
+            <Text dimColor wrap="wrap">
+              I enjoy turning product ideas into reliable systems, from clean interfaces and APIs to the infrastructure that keeps them fast.
+            </Text>
+          </Box>
+
+          <Box marginTop={1} flexDirection="column">
+            <SectionTitle title="experience" />
+            <Text> </Text>
+            <Box width="100%" justifyContent="space-between">
+              <Text bold>{currentRole.company}</Text>
+              <Text dimColor>{currentRole.period}</Text>
+            </Box>
+            <Box width="100%" justifyContent="space-between">
+              <Text dimColor wrap="wrap">{currentRole.role}</Text>
+              <Text dimColor wrap="wrap">{currentRole.location}</Text>
+            </Box>
+            <Text> </Text>
+            <Text wrap="wrap">{currentRole.description}</Text>
+            <Text> </Text>
+            {currentRole.highlights.map((highlight) => (
+              <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>
+            ))}
+          </Box>
+
+          <Box marginTop={1} flexDirection="column">
+            <SectionTitle title="stack" />
+            <Text> </Text>
+            {skills.map((group) => (
+              <Box key={group.title} flexDirection="row" width="100%">
+                <Box width={16} flexShrink={0}>
+                  <Text dimColor>{group.title.toLowerCase()}</Text>
+                </Box>
+                <Box flexGrow={1}>
+                  <Text wrap="wrap">{group.skills.join(" · ")}</Text>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+          <Box marginTop={1} flexDirection="column">
+            <SectionTitle title="highlights" />
+            <Text> </Text>
+            {profile.highlights.map((highlight) => (
+              <Text key={highlight} wrap="wrap">· {highlight}</Text>
+            ))}
+          </Box>
+        </Box>
+      </ScrollViewport>
+
+      <StatusBar progress={progress} />
     </Box>
   );
 }
