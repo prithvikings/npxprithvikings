@@ -57,7 +57,7 @@ export default function Home({ selectedIndex }: HomeProps) {
 
       <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
 
-      <ScrollViewport height={viewportHeight} contentHeight={110} onProgressChange={setProgress}>
+      <ScrollViewport height={viewportHeight} contentHeight={72} onProgressChange={setProgress}>
         <Box width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start">
             <Text bold color={theme.primary}>{nameArt}</Text>
