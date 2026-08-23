@@ -20,28 +20,21 @@ interface UsePortfolioInputProps {
   selectedIndex: number;
   selectedProjectIndex: number;
   selectedContactIndex: number;
-  scrollOffset: number;
-  scrollMax: number;
   setView: (view: View) => void;
   setSelectedIndex: (updater: (current: number) => number) => void;
   setSelectedProjectIndex: (updater: (current: number) => number) => void;
   setSelectedContactIndex: (updater: (current: number) => number) => void;
-  setScrollOffset: (updater: (current: number) => number) => void;
 }
-
-const SCROLL_STEP = 2;
 
 export function usePortfolioInput({
   view,
   selectedIndex,
   selectedProjectIndex,
   selectedContactIndex,
-  scrollMax,
   setView,
   setSelectedIndex,
   setSelectedProjectIndex,
   setSelectedContactIndex,
-  setScrollOffset,
 }: UsePortfolioInputProps) {
   useInput((input, key) => {
     if (input === "q") process.exit(0);
@@ -51,37 +44,9 @@ export function usePortfolioInput({
       return;
     }
 
+    // Home scrolling is handled by Home.tsx so the viewport owns its
+    // scrolling state. The root handler only owns horizontal navigation.
     if (view === "home") {
-      if (key.upArrow) {
-        setScrollOffset((current) => Math.max(0, current - SCROLL_STEP));
-        return;
-      }
-
-      if (key.downArrow) {
-        setScrollOffset((current) => Math.min(scrollMax, current + SCROLL_STEP));
-        return;
-      }
-
-      if (key.pageUp) {
-        setScrollOffset((current) => Math.max(0, current - 10));
-        return;
-      }
-
-      if (key.pageDown) {
-        setScrollOffset((current) => Math.min(scrollMax, current + 10));
-        return;
-      }
-
-      if (key.home) {
-        setScrollOffset(() => 0);
-        return;
-      }
-
-      if (key.end) {
-        setScrollOffset(() => scrollMax);
-        return;
-      }
-
       if (key.leftArrow) {
         setSelectedIndex((current) =>
           current === 0 ? navigationItems.length - 1 : current - 1,
