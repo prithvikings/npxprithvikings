@@ -1,6 +1,6 @@
 import { Box, Text, useInput } from "ink";
 import figlet from "figlet";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
@@ -18,6 +18,7 @@ interface HomeProps {
 
 const SCROLL_MAX = 50;
 const SCROLL_STEP = 2;
+const MOUSE_SCROLL_STEP = 3;
 
 const nameArt = figlet.textSync("PRITHVI", {
   font: "ANSI Shadow",
@@ -43,6 +44,60 @@ export default function Home({ selectedIndex }: HomeProps) {
   const currentRole = experience[0];
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
+
+  // Ink handles keyboard input for us, but terminal mouse-wheel events are
+  // delivered as ANSI mouse sequences. Enable SGR mouse reporting while the
+  // Home viewport is mounted so the terminal does not consume the wheel as
+  // scrollback and we can use it for the portfolio's own scrollbar.
+  useEffect(() => {
+    const stdin = process.stdin;
+    const stdout = process.stdout;
+    let remainder = "";
+
+    const enableMouse = () => {
+      stdout.write("\x1b[?1000h\x1b[?1006h");
+    };
+
+    const disableMouse = () => {
+      stdout.write("\x1b[?1006l\x1b[?1000l");
+    };
+
+    const handleMouseData = (chunk: Buffer | string) => {
+      const data = remainder + chunk.toString();
+      remainder = "";
+
+      // SGR mouse format: ESC [ < button ; x ; y M/m
+      // Wheel up/down are button 64/65 respectively.
+      const mousePattern = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
+      let match: RegExpExecArray | null;
+      let lastIndex = 0;
+
+      while ((match = mousePattern.exec(data)) !== null) {
+        lastIndex = mousePattern.lastIndex;
+        const button = Number(match[1]);
+
+        if (button === 64) {
+          setScrollOffset((current) => Math.max(0, current - MOUSE_SCROLL_STEP));
+        } else if (button === 65) {
+          setScrollOffset((current) => Math.min(SCROLL_MAX, current + MOUSE_SCROLL_STEP));
+        }
+      }
+
+      // Keep an incomplete escape sequence for the next stdin chunk.
+      const trailingEscape = data.slice(lastIndex);
+      if (/\x1b(?:\[)?(?:<[^M]*?)?$/.test(trailingEscape)) {
+        remainder = trailingEscape;
+      }
+    };
+
+    enableMouse();
+    stdin.on("data", handleMouseData);
+
+    return () => {
+      stdin.off("data", handleMouseData);
+      disableMouse();
+    };
+  }, []);
 
   useInput((input, key) => {
     if (key.downArrow || key.pageDown || input === "j") {
