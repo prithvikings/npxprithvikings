@@ -6,6 +6,7 @@ import { contactLinks } from "../data/contactLinks.js";
 import { openUrl } from "../utils/openUrl.js";
 
 export type View =
+  | "welcome"
   | "home"
   | "about"
   | "experience"
@@ -53,6 +54,18 @@ export function usePortfolioInput({
 
     if (input === "q") {
       process.exit(0);
+    }
+
+    // -------------------------
+    // WELCOME
+    // -------------------------
+
+    if (view === "welcome") {
+      if (key.return) {
+        setView("home");
+      }
+
+      return;
     }
 
     // -------------------------
