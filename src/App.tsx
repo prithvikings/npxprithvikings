@@ -27,21 +27,10 @@ export default function App({
       ? "welcome"
       : initialView;
 
-  const [view, setView] =
-    useState<View>(resolvedInitialView);
-
-  const [selectedIndex, setSelectedIndex] =
-    useState(0);
-
-  const [
-    selectedProjectIndex,
-    setSelectedProjectIndex,
-  ] = useState(0);
-
-  const [
-    selectedContactIndex,
-    setSelectedContactIndex,
-  ] = useState(0);
+  const [view, setView] = useState<View>(resolvedInitialView);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState(0);
+  const [selectedContactIndex, setSelectedContactIndex] = useState(0);
 
   usePortfolioInput({
     view,
@@ -56,16 +45,12 @@ export default function App({
 
   const renderContent = () => {
     if (view === "welcome") {
-      return (
-        <Welcome
-          onContinue={() => setView("home")}
-        />
-      );
+      return <Welcome onContinue={() => setView("home")} />;
     }
 
     if (view === "home") {
       return (
-        <TerminalLayout footer="↑ ↓ Navigate • Enter Select • Q Quit" showHeader={false}>
+        <TerminalLayout showHeader={false}>
           <Home selectedIndex={selectedIndex} />
         </TerminalLayout>
       );
@@ -89,17 +74,10 @@ export default function App({
       );
     }
 
-    if (
-      view === "about" ||
-      view === "experience" ||
-      view === "contact"
-    ) {
+    if (view === "about" || view === "experience" || view === "contact") {
       return (
         <TerminalLayout footer="ESC Back • Q Quit">
-          <PageRenderer
-            page={view}
-            selectedContactIndex={selectedContactIndex}
-          />
+          <PageRenderer page={view} selectedContactIndex={selectedContactIndex} />
         </TerminalLayout>
       );
     }
