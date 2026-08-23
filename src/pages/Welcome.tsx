@@ -11,23 +11,68 @@ const greetings = [
   "Namaste",
 ];
 
-const GREETING_INTERVAL = 900;
-const SHINE_INTERVAL = 4000;
-const SHINE_DURATION = 900;
+const TYPE_SPEED = 85;
+const DELETE_SPEED = 45;
+const HOLD_AFTER_TYPE = 650;
+const SHINE_INTERVAL = 2500;
+const SHINE_DURATION = 700;
 const SHINE_COLOR = "#FFF7ED";
 
-export default function Welcome() {
+interface WelcomeProps {
+  onContinue: () => void;
+}
+
+export default function Welcome({ onContinue }: WelcomeProps) {
   const [greetingIndex, setGreetingIndex] = useState(0);
+  const [greetingText, setGreetingText] = useState("");
   const [shineProgress, setShineProgress] = useState(-1);
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setGreetingIndex((current) =>
-        (current + 1) % greetings.length,
-      );
-    }, GREETING_INTERVAL);
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout>;
 
-    return () => clearInterval(interval);
+    const typeGreeting = (index: number) => {
+      const greeting = greetings[index];
+      let characterIndex = 0;
+
+      const typeNext = () => {
+        if (cancelled) return;
+
+        if (characterIndex < greeting.length) {
+          characterIndex += 1;
+          setGreetingText(greeting.slice(0, characterIndex));
+          timeout = setTimeout(typeNext, TYPE_SPEED);
+          return;
+        }
+
+        timeout = setTimeout(deleteNext, HOLD_AFTER_TYPE);
+      };
+
+      const deleteNext = () => {
+        if (cancelled) return;
+
+        if (characterIndex > 0) {
+          characterIndex -= 1;
+          setGreetingText(greeting.slice(0, characterIndex));
+          timeout = setTimeout(deleteNext, DELETE_SPEED);
+          return;
+        }
+
+        const nextIndex = (index + 1) % greetings.length;
+        setGreetingIndex(nextIndex);
+        typeGreeting(nextIndex);
+      };
+
+      typeNext();
+    };
+
+    typeGreeting(0);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -36,7 +81,6 @@ export default function Welcome() {
 
     const startShine = () => {
       const startedAt = Date.now();
-
       setShineProgress(0);
 
       animation = setInterval(() => {
@@ -53,16 +97,96 @@ export default function Welcome() {
           setShineProgress(-1);
           timeout = setTimeout(startShine, SHINE_INTERVAL);
         }
-      }, 40);
+      }, 35);
     };
 
-    timeout = setTimeout(startShine, 1200);
+    timeout = setTimeout(startShine, 700);
 
     return () => {
       clearTimeout(timeout);
       clearInterval(animation);
     };
   }, []);
+
+  useEffect(() => {
+    const stdin = process.stdin;
+    const stdout = process.stdout;
+
+    if (!stdin.isTTY || !stdout.isTTY) {
+      return;
+    }
+
+    const columns = stdout.columns ?? 80;
+    const rows = Math.max((stdout.rows ?? 24) - 1, 12);
+
+    // Enable SGR mouse reporting. Terminals that do not support it
+    // simply ignore these escape sequences and keyboard input still works.
+    stdout.write("\x1b[?1000h\x1b[?1006h");
+
+    const nameArt = figlet.textSync("PRITHVI", {
+      font: "ANSI Shadow",
+      horizontalLayout: "default",
+      verticalLayout: "default",
+    });
+
+    const nameLines = nameArt.split("\n").filter(
+      (line, index, lines) =>
+        index !== lines.length - 1 || line.length > 0,
+    );
+
+    const nameHeight = nameLines.length;
+    const nameWidth = Math.max(
+      ...nameLines.map((line) => line.length),
+    );
+
+    // The content area is vertically centered above the footer.
+    // Keep the hit target slightly generous so mouse interaction feels natural.
+    const contentHeight =
+      nameHeight + 1 + 2 + 1 + 2 + 1;
+    const contentTop = Math.max(
+      1,
+      Math.floor((rows - contentHeight) / 2) + 1,
+    );
+    const buttonTop =
+      contentTop + nameHeight + 1 + 2 + 1;
+    const buttonHeight = 3;
+    const buttonWidth = 12;
+    const buttonLeft = Math.floor(
+      (columns - buttonWidth) / 2,
+    ) + 1;
+
+    const handleMouse = (chunk: Buffer | string) => {
+      const data = chunk.toString();
+      const matches = data.matchAll(
+        /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g,
+      );
+
+      for (const match of matches) {
+        const x = Number(match[2]);
+        const y = Number(match[3]);
+        const action = match[4];
+
+        const insideButton =
+          x >= buttonLeft - 1 &&
+          x <= buttonLeft + buttonWidth &&
+          y >= buttonTop &&
+          y <= buttonTop + buttonHeight - 1;
+
+        setIsButtonHovered(insideButton);
+
+        if (action === "M" && insideButton) {
+          onContinue();
+        }
+      }
+    };
+
+    stdin.on("data", handleMouse);
+
+    return () => {
+      stdin.off("data", handleMouse);
+      stdout.write("\x1b[?1006l\x1b[?1000l");
+    };
+  }, [onContinue]);
 
   const nameArt = useMemo(
     () =>
@@ -146,7 +270,7 @@ export default function Welcome() {
 
         <Box marginTop={1} height={1}>
           <Text bold>
-            {greetings[greetingIndex]}
+            {greetingText || " "}
           </Text>
         </Box>
 
@@ -159,17 +283,13 @@ export default function Welcome() {
         <Box
           marginTop={2}
           borderStyle="round"
-          borderColor={theme.primary}
+          borderColor={
+            isButtonHovered ? SHINE_COLOR : theme.primary
+          }
           paddingX={2}
           paddingY={0}
         >
           <Text bold>↵ Enter</Text>
-        </Box>
-
-        <Box marginTop={1}>
-          <Text dimColor>
-            Press Enter to continue
-          </Text>
         </Box>
       </Box>
 
