@@ -1,4 +1,4 @@
-import { useFocusManager, useInput } from "ink";
+import { useInput } from "ink";
 
 import { navigationItems } from "../data/navigation.js";
 import { projects } from "../data/projects.js";
@@ -36,8 +36,6 @@ export function usePortfolioInput({
   setSelectedProjectIndex,
   setSelectedContactIndex,
 }: UsePortfolioInputProps) {
-  const { activeId } = useFocusManager();
-
   useInput((input, key) => {
     if (input === "q") process.exit(0);
 
@@ -47,13 +45,11 @@ export function usePortfolioInput({
     }
 
     if (view === "home") {
-      if (key.leftArrow) {
-        setSelectedIndex((current) => current === 0 ? navigationItems.length - 1 : current - 1);
-      }
-      if (key.rightArrow) {
-        setSelectedIndex((current) => current === navigationItems.length - 1 ? 0 : current + 1);
-      }
+      if (key.leftArrow) setSelectedIndex((current) => current === 0 ? navigationItems.length - 1 : current - 1);
+      if (key.rightArrow) setSelectedIndex((current) => current === navigationItems.length - 1 ? 0 : current + 1);
 
+      // Section headers own plain Enter. Ctrl+Enter activates the selected
+      // top navigation item without conflicting with section folding.
       if (key.return && key.ctrl) {
         const page = navigationItems[selectedIndex].page;
         if (page === "projects") {
@@ -62,10 +58,7 @@ export function usePortfolioInput({
         } else {
           setView(page);
         }
-        return;
       }
-
-      if (key.return && activeId?.startsWith("section-")) return;
       return;
     }
 
