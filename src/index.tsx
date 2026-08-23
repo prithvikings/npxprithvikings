@@ -89,6 +89,10 @@ const initialView =
     ? commands[command]
     : "home";
 
+// Keep npm/node startup output from becoming part of the portfolio UI.
+// The interactive experience should begin on a clean terminal screen.
+console.clear();
+
 render(
   <App initialView={initialView} />
 );
