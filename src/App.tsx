@@ -6,6 +6,7 @@ import PageRenderer from "./components/PageRenderer.js";
 import ProjectList from "./components/ProjectList.js";
 import ProjectDetails from "./components/ProjectDetails.js";
 import Home from "./pages/Home.js";
+import Welcome from "./pages/Welcome.js";
 
 import {
   usePortfolioInput,
@@ -19,7 +20,7 @@ interface AppProps {
 }
 
 export default function App({
-  initialView = "home",
+  initialView = "welcome",
 }: AppProps) {
   const [view, setView] =
     useState<View>(initialView);
@@ -49,6 +50,14 @@ export default function App({
   });
 
   const renderContent = () => {
+    // -------------------------
+    // WELCOME
+    // -------------------------
+
+    if (view === "welcome") {
+      return <Welcome />;
+    }
+
     // -------------------------
     // HOME
     // -------------------------
