@@ -25,10 +25,10 @@ export default function CollapsibleSection({
   children,
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({ id, autoFocus: index === 0 });
-  const headerRef = useRef<DOMElement | null>(null);
+  const sectionRef = useRef<DOMElement | null>(null);
 
   useLayoutEffect(() => {
-    const layout = headerRef.current?.yogaNode?.getComputedLayout();
+    const layout = sectionRef.current?.yogaNode?.getComputedLayout();
     if (!layout) return;
     onPosition(id, layout.top, layout.height);
   });
@@ -45,9 +45,8 @@ export default function CollapsibleSection({
   );
 
   return (
-    <Box flexDirection="column" marginTop={1}>
+    <Box ref={sectionRef} flexDirection="column" marginTop={1}>
       <Box
-        ref={headerRef}
         width="100%"
         height={1}
         flexDirection="row"
