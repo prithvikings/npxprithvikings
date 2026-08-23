@@ -1,6 +1,6 @@
 import { Box, Text, type DOMElement, useFocusManager, useInput, useStdin, useStdout } from "ink";
 import figlet from "figlet";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import CollapsibleSection from "../components/CollapsibleSection.js";
 import Navigation from "../components/Navigation.js";
@@ -65,23 +65,23 @@ export default function Home({ selectedIndex }: HomeProps) {
     setScrollOffset((current) => Math.min(current, maxScrollOffset));
   }, [maxScrollOffset]);
 
-  const handlePosition = (id: string, top: number, height: number) => {
+  const handlePosition = useCallback((id: string, top: number, height: number) => {
     sectionPositions.current[id] = { top, height };
-  };
+  }, []);
 
-  const handleFocus = (_index: number, top: number, height: number) => {
+  const handleFocus = useCallback((_index: number, top: number, height: number) => {
     setScrollOffset((current) => {
       const visibleTop = top - current;
       const visibleBottom = visibleTop + height;
-      if (visibleTop < 0) return Math.max(0, Math.min(maxScrollOffset, current + visibleTop));
-      if (visibleBottom > viewportHeight) return Math.max(0, Math.min(maxScrollOffset, current + visibleBottom - viewportHeight));
+      if (visibleTop < 0) return Math.max(0, Math.min(maxScrollOffsetRef.current, current + visibleTop));
+      if (visibleBottom > viewportHeightRef.current) return Math.max(0, Math.min(maxScrollOffsetRef.current, current + visibleBottom - viewportHeightRef.current));
       return current;
     });
-  };
+  }, []);
 
-  const toggleSection = (id: string) => {
+  const toggleSection = useCallback((id: string) => {
     setCollapsed((current) => ({ ...current, [id]: !current[id] }));
-  };
+  }, []);
 
   useEffect(() => {
     if (!stdin || !stdout) return;
@@ -103,7 +103,6 @@ export default function Home({ selectedIndex }: HomeProps) {
       remainder = "";
       let consumedUntil = 0;
 
-      // SGR mouse protocol: ESC [ < button ; x ; y M/m
       const sgrPattern = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
       let match: RegExpExecArray | null;
 
@@ -146,8 +145,6 @@ export default function Home({ selectedIndex }: HomeProps) {
         }
       }
 
-      // Windows Terminal normally uses SGR, but keep the legacy X10 wheel
-      // protocol as a fallback for terminals that don't emit SGR events.
       const legacyStart = Math.max(0, consumedUntil);
       const legacyData = data.slice(legacyStart);
       let legacyIndex = 0;
@@ -168,7 +165,7 @@ export default function Home({ selectedIndex }: HomeProps) {
       stdin.off("data", handleMouseData);
       stdout.write("\x1b[?1006l\x1b[?1000l");
     };
-  }, [focus, stdin, stdout]);
+  }, [focus, stdin, stdout, toggleSection]);
 
   useInput((input, key) => {
     if (key.downArrow || key.pageDown || input === "j") {
