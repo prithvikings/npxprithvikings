@@ -14,9 +14,15 @@ import {
 
 import { projects } from "./data/projects.js";
 
-export default function App() {
+interface AppProps {
+  initialView?: View;
+}
+
+export default function App({
+  initialView = "home",
+}: AppProps) {
   const [view, setView] =
-    useState<View>("home");
+    useState<View>(initialView);
 
   const [selectedIndex, setSelectedIndex] =
     useState(0);
@@ -26,30 +32,47 @@ export default function App() {
     setSelectedProjectIndex,
   ] = useState(0);
 
+  const [
+    selectedContactIndex,
+    setSelectedContactIndex,
+  ] = useState(0);
+
   usePortfolioInput({
     view,
     selectedIndex,
     selectedProjectIndex,
+    selectedContactIndex,
     setView,
     setSelectedIndex,
     setSelectedProjectIndex,
+    setSelectedContactIndex,
   });
 
   const renderContent = () => {
-if (view === "home") {
-  return (
-    <TerminalLayout footer="↑ ↓ Navigate • Enter Select • Q Quit">
-      <Home
-        selectedIndex={selectedIndex}
-      />
-    </TerminalLayout>
-  );
-}
+    // -------------------------
+    // HOME
+    // -------------------------
+
+    if (view === "home") {
+      return (
+        <TerminalLayout footer="↑ ↓ Navigate • Enter Select • Q Quit">
+          <Home
+            selectedIndex={selectedIndex}
+          />
+        </TerminalLayout>
+      );
+    }
+
+    // -------------------------
+    // PROJECT LIST
+    // -------------------------
 
     if (view === "project-list") {
       return (
         <TerminalLayout footer="↑ ↓ Navigate • Enter Select • ESC Back">
-          <Text bold>PROJECTS</Text>
+          <Text bold>
+            PROJECTS
+          </Text>
 
           <Text> </Text>
 
@@ -60,15 +83,25 @@ if (view === "home") {
       );
     }
 
+    // -------------------------
+    // PROJECT DETAILS
+    // -------------------------
+
     if (view === "project-details") {
       return (
         <TerminalLayout footer="ESC Back">
           <ProjectDetails
-            project={projects[selectedProjectIndex]}
+            project={
+              projects[selectedProjectIndex]
+            }
           />
         </TerminalLayout>
       );
     }
+
+    // -------------------------
+    // OTHER PAGES
+    // -------------------------
 
     if (
       view === "about" ||
@@ -77,7 +110,12 @@ if (view === "home") {
     ) {
       return (
         <TerminalLayout footer="ESC Back • Q Quit">
-          <PageRenderer page={view} />
+          <PageRenderer
+            page={view}
+            selectedContactIndex={
+              selectedContactIndex
+            }
+          />
         </TerminalLayout>
       );
     }

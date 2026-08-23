@@ -2,6 +2,8 @@ import { useInput } from "ink";
 
 import { navigationItems } from "../data/navigation.js";
 import { projects } from "../data/projects.js";
+import { contactLinks } from "../data/contactLinks.js";
+import { openUrl } from "../utils/openUrl.js";
 
 export type View =
   | "home"
@@ -14,14 +16,22 @@ export type View =
 
 interface UsePortfolioInputProps {
   view: View;
+
   selectedIndex: number;
   selectedProjectIndex: number;
+  selectedContactIndex: number;
 
   setView: (view: View) => void;
+
   setSelectedIndex: (
     updater: (current: number) => number
   ) => void;
+
   setSelectedProjectIndex: (
+    updater: (current: number) => number
+  ) => void;
+
+  setSelectedContactIndex: (
     updater: (current: number) => number
   ) => void;
 }
@@ -30,12 +40,17 @@ export function usePortfolioInput({
   view,
   selectedIndex,
   selectedProjectIndex,
+  selectedContactIndex,
   setView,
   setSelectedIndex,
   setSelectedProjectIndex,
+  setSelectedContactIndex,
 }: UsePortfolioInputProps) {
   useInput((input, key) => {
-    // Quit from anywhere
+    // -------------------------
+    // QUIT
+    // -------------------------
+
     if (input === "q") {
       process.exit(0);
     }
@@ -116,6 +131,42 @@ export function usePortfolioInput({
     if (view === "project-details") {
       if (key.escape) {
         setView("project-list");
+      }
+
+      return;
+    }
+
+    // -------------------------
+    // CONTACT
+    // -------------------------
+
+    if (view === "contact") {
+      if (key.escape) {
+        setView("home");
+        return;
+      }
+
+      if (key.upArrow) {
+        setSelectedContactIndex((current) =>
+          current === 0
+            ? contactLinks.length - 1
+            : current - 1
+        );
+      }
+
+      if (key.downArrow) {
+        setSelectedContactIndex((current) =>
+          current === contactLinks.length - 1
+            ? 0
+            : current + 1
+        );
+      }
+
+      if (key.return) {
+        const { url } =
+          contactLinks[selectedContactIndex];
+
+        openUrl(url);
       }
 
       return;

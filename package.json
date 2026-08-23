@@ -1,23 +1,29 @@
 {
   "name": "prithvikings",
   "version": "1.0.0",
-  "description": "Prithvi's interactive terminal portfolio",
+  "description": "Prithvi Raj's interactive terminal portfolio",
   "type": "module",
   "bin": {
     "prithvi": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "npm run build && npm run start"
+    "dev": "npm run build && npm run start",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "portfolio",
-    "cli",
     "terminal",
-    "developer"
+    "cli",
+    "developer",
+    "interactive",
+    "prithvi"
   ],
-  "author": "Prithvi",
+  "author": "Prithvi Raj",
   "license": "MIT",
   "dependencies": {
     "figlet": "^1.11.4",

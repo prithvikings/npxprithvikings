@@ -1,9 +1,16 @@
 import { Box, Text } from "ink";
 
-import { contact } from "../data/contact.js";
+import { contactLinks } from "../data/contactLinks.js";
 import { theme } from "../theme.js";
+import TerminalLink from "../components/TerminalLink.js";
 
-export default function Contact() {
+interface ContactProps {
+  selectedContactIndex: number;
+}
+
+export default function Contact({
+  selectedContactIndex,
+}: ContactProps) {
   return (
     <Box flexDirection="column">
       <Text bold color={theme.primary}>
@@ -18,24 +25,39 @@ export default function Contact() {
 
       <Text> </Text>
 
-      <Text bold>GitHub</Text>
-      <Text dimColor>
-        {contact.github}
-      </Text>
+      {contactLinks.map((link, index) => {
+        const selected =
+          index === selectedContactIndex;
 
-      <Text> </Text>
+        return (
+          <Box
+            key={link.label}
+            flexDirection="column"
+            marginBottom={1}
+          >
+            <Text
+              bold={selected}
+              color={
+                selected
+                  ? theme.primary
+                  : undefined
+              }
+            >
+              {selected ? "❯ " : "  "}
+              {link.label}
+            </Text>
 
-      <Text bold>LinkedIn</Text>
-      <Text dimColor>
-        {contact.linkedin}
-      </Text>
-
-      <Text> </Text>
-
-      <Text bold>Website</Text>
-      <Text dimColor>
-        {contact.website}
-      </Text>
+            <Text dimColor>
+  {"   "}
+  <TerminalLink
+    url={link.url}
+  >
+    {link.url}
+  </TerminalLink>
+</Text>
+          </Box>
+        );
+      })}
     </Box>
   );
 }

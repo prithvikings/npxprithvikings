@@ -2,6 +2,7 @@ import { Box, Text } from "ink";
 
 import type { Project } from "../data/projects.js";
 import { theme } from "../theme.js";
+import TerminalLink from "../components/TerminalLink.js";
 
 interface ProjectDetailsProps {
   project: Project;
@@ -53,16 +54,26 @@ export default function ProjectDetails({
       </Text>
 
       {project.links.github && (
-        <Text>
-          GitHub: {project.links.github}
-        </Text>
-      )}
+  <Text>
+    GitHub:{" "}
+    <TerminalLink
+      url={project.links.github}
+    >
+      {project.links.github}
+    </TerminalLink>
+  </Text>
+)}
 
-      {project.links.demo && (
-        <Text>
-          Demo: {project.links.demo}
-        </Text>
-      )}
+     {project.links.demo && (
+  <Text>
+    Demo:{" "}
+    <TerminalLink
+      url={project.links.demo}
+    >
+      {project.links.demo}
+    </TerminalLink>
+  </Text>
+)}
     </Box>
   );
 }
