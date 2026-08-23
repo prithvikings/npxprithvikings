@@ -2,39 +2,47 @@ import { Box, Text } from "ink";
 import type { ReactNode } from "react";
 
 import Header from "./Header.js";
-import { theme } from "../theme.js";
 
 interface TerminalLayoutProps {
   children: ReactNode;
   footer?: string;
+  showHeader?: boolean;
 }
 
 export default function TerminalLayout({
   children,
   footer,
+  showHeader = true,
 }: TerminalLayoutProps) {
   return (
     <Box
+      width="100%"
       flexDirection="column"
-      padding={1}
-      borderStyle="round"
-      borderColor={theme.primary}
+      alignItems="center"
     >
-      <Header />
+      <Box
+        width="100%"
+        maxWidth={118}
+        flexDirection="column"
+        paddingX={2}
+      >
+        {showHeader && <Header />}
 
-      <Text> </Text>
+        {showHeader && <Text> </Text>}
 
-      {children}
+        {children}
 
-      {footer && (
-        <>
-          <Text> </Text>
-
-          <Text dimColor>
-            {footer}
-          </Text>
-        </>
-      )}
+        {footer && (
+          <Box
+            marginTop={1}
+            paddingTop={1}
+            borderStyle="single"
+            borderColor="gray"
+          >
+            <Text dimColor>{footer}</Text>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }
