@@ -51,9 +51,11 @@ export default function ScrollViewport({
     : 0;
 
   return (
-    <Box width="100%" height={viewportHeight} flexDirection="column" flexShrink={0}>
-      <Box width="100%" flexDirection="column" flexShrink={0} marginTop={-offset} paddingRight={1}>
-        {children}
+    <Box width="100%" height={viewportHeight} flexDirection="row" flexShrink={0}>
+      <Box width="100%" height={viewportHeight} flexDirection="column" flexShrink={0}>
+        <Box width="100%" flexDirection="column" flexShrink={0} marginTop={-offset} paddingRight={2}>
+          {children}
+        </Box>
       </Box>
 
       <Box width={1} height={viewportHeight} flexShrink={0} marginLeft={-1}>
@@ -64,7 +66,7 @@ export default function ScrollViewport({
 
       {hasOverflow && (
         <Box width={1} height={thumbHeight} flexShrink={0} marginLeft={-1} marginTop={-viewportHeight + thumbTop}>
-          <Text color={theme.muted}>
+          <Text color={theme.primary}>
             {"┃\n".repeat(Math.max(0, thumbHeight - 1))}┃
           </Text>
         </Box>
