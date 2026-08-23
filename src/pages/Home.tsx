@@ -1,5 +1,6 @@
-import { Box, Text } from "ink";
+import { Box, Text, useInput } from "ink";
 import figlet from "figlet";
+import { useState } from "react";
 
 import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
@@ -13,9 +14,10 @@ import { theme } from "../theme.js";
 
 interface HomeProps {
   selectedIndex: number;
-  scrollOffset: number;
-  scrollMax: number;
 }
+
+const SCROLL_MAX = 50;
+const SCROLL_STEP = 2;
 
 const nameArt = figlet.textSync("PRITHVI", {
   font: "ANSI Shadow",
@@ -35,12 +37,35 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-export default function Home({ selectedIndex, scrollOffset, scrollMax }: HomeProps) {
+export default function Home({ selectedIndex }: HomeProps) {
   const { rows } = useTerminalSize();
+  const [scrollOffset, setScrollOffset] = useState(0);
   const currentRole = experience[0];
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
-  const progress = scrollMax === 0 ? 0 : Math.round((scrollOffset / scrollMax) * 100);
+
+  useInput((input, key) => {
+    if (key.downArrow || key.pageDown || input === "j") {
+      setScrollOffset((current) => Math.min(SCROLL_MAX, current + (key.pageDown ? 10 : SCROLL_STEP)));
+      return;
+    }
+
+    if (key.upArrow || key.pageUp || input === "k") {
+      setScrollOffset((current) => Math.max(0, current - (key.pageUp ? 10 : SCROLL_STEP)));
+      return;
+    }
+
+    if (key.home) {
+      setScrollOffset(0);
+      return;
+    }
+
+    if (key.end) {
+      setScrollOffset(SCROLL_MAX);
+    }
+  });
+
+  const progress = Math.round((scrollOffset / SCROLL_MAX) * 100);
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -61,7 +86,7 @@ export default function Home({ selectedIndex, scrollOffset, scrollMax }: HomePro
       <ScrollViewport
         height={viewportHeight}
         offset={scrollOffset}
-        maxOffset={scrollMax}
+        maxOffset={SCROLL_MAX}
       >
         <Box width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start">
