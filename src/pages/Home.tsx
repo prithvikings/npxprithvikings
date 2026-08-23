@@ -58,9 +58,10 @@ export default function Home({ selectedIndex }: HomeProps) {
 
   const handleFocus = (_index: number, top: number, height: number) => {
     setScrollOffset((current) => {
-      const bottom = top + height;
-      if (top < 0) return Math.max(0, Math.min(maxScrollOffset, current + top));
-      if (bottom > viewportHeight) return Math.max(0, Math.min(maxScrollOffset, current + bottom - viewportHeight));
+      const visibleTop = top - current;
+      const visibleBottom = visibleTop + height;
+      if (visibleTop < 0) return Math.max(0, Math.min(maxScrollOffset, current + visibleTop));
+      if (visibleBottom > viewportHeight) return Math.max(0, Math.min(maxScrollOffset, current + visibleBottom - viewportHeight));
       return current;
     });
   };
@@ -102,7 +103,7 @@ export default function Home({ selectedIndex }: HomeProps) {
           for (const id of SECTION_IDS) {
             const position = sectionPositions.current[id];
             if (!position) continue;
-            const top = viewportTop + position.top;
+            const top = viewportTop - scrollOffset + position.top;
             if (mouseY >= top && mouseY < top + position.height) {
               focus(id);
               toggleSection(id);
@@ -121,7 +122,7 @@ export default function Home({ selectedIndex }: HomeProps) {
       stdin.off("data", handleMouseData);
       stdout.write("\x1b[?1006l\x1b[?1000l");
     };
-  }, [focus, maxScrollOffset, viewportHeight, viewportTop]);
+  }, [focus, maxScrollOffset, scrollOffset, viewportHeight, viewportTop]);
 
   useInput((input, key) => {
     if (key.downArrow || key.pageDown || input === "j") {
