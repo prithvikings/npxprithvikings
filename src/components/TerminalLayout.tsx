@@ -1,7 +1,8 @@
-import { Box, Text } from "ink";
+import { Box } from "ink";
 import type { ReactNode } from "react";
 
 import Header from "./Header.js";
+import StatusBar from "./StatusBar.js";
 
 interface TerminalLayoutProps {
   children: ReactNode;
@@ -14,34 +15,18 @@ export default function TerminalLayout({
   footer,
   showHeader = true,
 }: TerminalLayoutProps) {
-  // Ink's Box does not support CSS-style `maxWidth`.
-  // Cap the content width manually while keeping it centered in the terminal.
   const terminalWidth = process.stdout.columns ?? 118;
-  const contentWidth = Math.min(terminalWidth, 118);
+  const contentWidth = Math.min(Math.max(70, terminalWidth - 24), 100);
 
   return (
     <Box width="100%" flexDirection="column" alignItems="center">
-      <Box
-        width={contentWidth}
-        flexDirection="column"
-        paddingX={2}
-      >
+      <Box width={contentWidth} flexDirection="column" paddingX={1}>
         {showHeader && <Header />}
-        {showHeader && <Text> </Text>}
+        {showHeader && <Box marginTop={0} />}
 
         {children}
 
-        {footer && (
-          <Box
-            width="100%"
-            marginTop={1}
-            paddingTop={1}
-            borderStyle="single"
-            borderColor="gray"
-          >
-            <Text dimColor>{footer}</Text>
-          </Box>
-        )}
+        {footer ? <StatusBar /> : null}
       </Box>
     </Box>
   );
