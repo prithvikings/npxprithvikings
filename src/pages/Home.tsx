@@ -1,6 +1,5 @@
 import { Box, Text } from "ink";
 import figlet from "figlet";
-import { useState } from "react";
 
 import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
@@ -14,6 +13,8 @@ import { theme } from "../theme.js";
 
 interface HomeProps {
   selectedIndex: number;
+  scrollOffset: number;
+  scrollMax: number;
 }
 
 const nameArt = figlet.textSync("PRITHVI", {
@@ -34,12 +35,12 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-export default function Home({ selectedIndex }: HomeProps) {
+export default function Home({ selectedIndex, scrollOffset, scrollMax }: HomeProps) {
   const { rows } = useTerminalSize();
-  const [progress, setProgress] = useState(0);
   const currentRole = experience[0];
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
+  const progress = scrollMax === 0 ? 0 : Math.round((scrollOffset / scrollMax) * 100);
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -57,7 +58,11 @@ export default function Home({ selectedIndex }: HomeProps) {
 
       <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
 
-      <ScrollViewport height={viewportHeight} contentHeight={72} onProgressChange={setProgress}>
+      <ScrollViewport
+        height={viewportHeight}
+        offset={scrollOffset}
+        maxOffset={scrollMax}
+      >
         <Box width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start">
             <Text bold color={theme.primary}>{nameArt}</Text>
