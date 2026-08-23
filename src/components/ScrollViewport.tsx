@@ -50,27 +50,24 @@ export default function ScrollViewport({
     ? Math.round((offset / maxOffset) * (viewportHeight - thumbHeight))
     : 0;
 
+  const scrollbar = Array.from({ length: viewportHeight }, (_, index) => {
+    const isThumb = hasOverflow && index >= thumbTop && index < thumbTop + thumbHeight;
+    return isThumb ? "┃" : "│";
+  }).join("\n");
+
   return (
     <Box width="100%" height={viewportHeight} flexDirection="row" flexShrink={0}>
-      <Box width="100%" height={viewportHeight} flexDirection="column" flexShrink={0}>
-        <Box width="100%" flexDirection="column" flexShrink={0} marginTop={-offset} paddingRight={2}>
+      <Box flexGrow={1} width={0} height={viewportHeight} flexDirection="column" flexShrink={1}>
+        <Box width="100%" flexDirection="column" flexShrink={0} marginTop={-offset} paddingRight={1}>
           {children}
         </Box>
       </Box>
 
-      <Box width={1} height={viewportHeight} flexShrink={0} marginLeft={-1}>
-        <Text dimColor color={theme.muted}>
-          {"│\n".repeat(Math.max(0, viewportHeight - 1))}│
+      <Box width={1} height={viewportHeight} flexShrink={0}>
+        <Text color={hasOverflow ? theme.muted : undefined} dimColor={!hasOverflow}>
+          {scrollbar}
         </Text>
       </Box>
-
-      {hasOverflow && (
-        <Box width={1} height={thumbHeight} flexShrink={0} marginLeft={-1} marginTop={-viewportHeight + thumbTop}>
-          <Text color={theme.primary}>
-            {"┃\n".repeat(Math.max(0, thumbHeight - 1))}┃
-          </Text>
-        </Box>
-      )}
     </Box>
   );
 }
