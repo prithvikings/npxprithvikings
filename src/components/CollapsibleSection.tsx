@@ -1,5 +1,5 @@
-import { Box, Text, useBoxMetrics, useFocus, useInput } from "ink";
-import { useEffect, useRef, type ReactNode } from "react";
+import { Box, Text, type DOMElement, useFocus, useInput } from "ink";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 
 import { theme } from "../theme.js";
 
@@ -24,30 +24,22 @@ export default function CollapsibleSection({
   onPosition,
   children,
 }: CollapsibleSectionProps) {
-  const { isFocused } = useFocus({
-    id,
-    autoFocus: index === 0,
-  });
-  const headerRef = useRef(null);
-  const metrics = useBoxMetrics(headerRef);
+  const { isFocused } = useFocus({ id, autoFocus: index === 0 });
+  const headerRef = useRef<DOMElement | null>(null);
 
-  useEffect(() => {
-    if (!metrics.hasMeasured) {
-      return;
-    }
+  useLayoutEffect(() => {
+    const layout = headerRef.current?.yogaNode?.getComputedLayout();
+    if (!layout) return;
 
-    onPosition(id, metrics.top, metrics.height);
-
+    onPosition(id, layout.top, layout.height);
     if (isFocused) {
-      onFocused(index, metrics.top, metrics.height);
+      onFocused(index, layout.top, layout.height);
     }
-  }, [id, index, isFocused, metrics.hasMeasured, metrics.top, metrics.height, onFocused, onPosition]);
+  });
 
   useInput(
     (_input, key) => {
-      if (key.return) {
-        onToggle(id);
-      }
+      if (key.return) onToggle(id);
     },
     { isActive: isFocused },
   );
@@ -66,10 +58,7 @@ export default function CollapsibleSection({
         <Text color={isFocused ? theme.primary : theme.muted}>
           {collapsed ? "▸ " : "▾ "}
         </Text>
-        <Text
-          bold={isFocused || !collapsed}
-          color={isFocused ? theme.primary : undefined}
-        >
+        <Text bold={isFocused || !collapsed} color={isFocused ? theme.primary : undefined}>
           {title}
         </Text>
         <Box flexGrow={1} marginLeft={1}>
@@ -77,11 +66,7 @@ export default function CollapsibleSection({
         </Box>
       </Box>
 
-      {!collapsed && (
-        <Box flexDirection="column">
-          {children}
-        </Box>
-      )}
+      {!collapsed && <Box flexDirection="column">{children}</Box>}
     </Box>
   );
 }
