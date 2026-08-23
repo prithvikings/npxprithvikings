@@ -10,54 +10,90 @@ interface HomeProps {
   selectedIndex: number;
 }
 
-export default function Home({
-  selectedIndex,
-}: HomeProps) {
+function Rule() {
+  return <Text dimColor>{"─".repeat(56)}</Text>;
+}
+
+export default function Home({ selectedIndex }: HomeProps) {
   return (
-    <Box flexDirection="column">
-      <Text>
-        {profile.summary}
-      </Text>
+    <Box flexDirection="column" width="100%">
+      <Box
+        width="100%"
+        justifyContent="space-between"
+        alignItems="center"
+        paddingBottom={1}
+      >
+        <Box borderStyle="round" borderColor={theme.primary} paddingX={1}>
+          <Text bold>PR</Text>
+        </Box>
 
-      <Text> </Text>
+        <Navigation selectedIndex={selectedIndex} />
 
-      <Text bold color={theme.primary}>
-        STACK
-      </Text>
+        <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
+          <Text>◐</Text>
+        </Box>
+      </Box>
 
-      <Text> </Text>
+      <Rule />
 
-      {skills.map((group) => (
-        <Text key={group.title}>
-          <Text bold>
-            {group.title}:{" "}
-          </Text>
+      <Box marginTop={1} flexDirection="row" justifyContent="space-between" width="100%">
+        <Box flexDirection="column" width="68%">
+          <Text color={theme.primary}>● AVAILABLE FOR WORK</Text>
+          <Text> </Text>
+          <Text bold>PRITHVI RAJ</Text>
+          <Text dimColor>{profile.title}</Text>
+          <Text> </Text>
+          <Text>{profile.tagline}</Text>
+        </Box>
 
-          <Text dimColor>
-            {group.skills.join(" • ")}
-          </Text>
+        <Box flexDirection="column" width="28%">
+          <Text>{profile.location}</Text>
+          <Text dimColor>India</Text>
+        </Box>
+      </Box>
+
+      <Box marginTop={2} flexDirection="column">
+        <Box flexDirection="row">
+          <Text color={theme.primary}>▾ </Text>
+          <Text bold>about</Text>
+        </Box>
+        <Rule />
+        <Text> </Text>
+        <Text>{profile.summary}</Text>
+        <Text> </Text>
+        <Text dimColor>
+          Building products across web applications, developer tools, and AI-powered experiences.
         </Text>
-      ))}
+      </Box>
 
-      <Text> </Text>
+      <Box marginTop={2} flexDirection="column">
+        <Box flexDirection="row">
+          <Text color={theme.primary}>▾ </Text>
+          <Text bold>stack</Text>
+        </Box>
+        <Rule />
+        <Text> </Text>
+        {skills.map((group) => (
+          <Box key={group.title} flexDirection="row">
+            <Box width={16}>
+              <Text dimColor>{group.title.toLowerCase()}</Text>
+            </Box>
+            <Text>{group.skills.join(" · ")}</Text>
+          </Box>
+        ))}
+      </Box>
 
-      <Text bold color={theme.primary}>
-        HIGHLIGHTS
-      </Text>
-
-      <Text> </Text>
-
-      {profile.highlights.map((highlight) => (
-        <Text key={highlight}>
-          • {highlight}
-        </Text>
-      ))}
-
-      <Text> </Text>
-
-      <Navigation
-        selectedIndex={selectedIndex}
-      />
+      <Box marginTop={2} flexDirection="column">
+        <Box flexDirection="row">
+          <Text color={theme.primary}>▾ </Text>
+          <Text bold>highlights</Text>
+        </Box>
+        <Rule />
+        <Text> </Text>
+        {profile.highlights.map((highlight) => (
+          <Text key={highlight}>· {highlight}</Text>
+        ))}
+      </Box>
     </Box>
   );
 }
