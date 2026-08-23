@@ -1,6 +1,7 @@
-import { Box, Text, useInput, useWindowSize } from "ink";
+import { Box, Text, useInput } from "ink";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { theme } from "../theme.js";
 
 interface ScrollViewportProps {
@@ -18,13 +19,11 @@ export default function ScrollViewport({
   contentHeight = 64,
   onProgressChange,
 }: ScrollViewportProps) {
-  const { rows } = useWindowSize();
-  const viewportHeight = height ?? Math.max(6, rows - 7);
+  const { rows } = useTerminalSize();
+  const viewportHeight = height ?? Math.max(6, rows - 8);
   const [offset, setOffset] = useState(0);
   const maxOffset = Math.max(0, contentHeight - viewportHeight);
-  const progress = maxOffset === 0
-    ? 0
-    : Math.round((offset / maxOffset) * 100);
+  const progress = maxOffset === 0 ? 0 : Math.round((offset / maxOffset) * 100);
 
   useEffect(() => {
     setOffset((current) => Math.min(current, maxOffset));
@@ -52,32 +51,19 @@ export default function ScrollViewport({
     : 0;
 
   return (
-    <Box
-      width="100%"
-      height={viewportHeight}
-      position="relative"
-      overflow="hidden"
-      flexDirection="column"
-      flexShrink={0}
-    >
-      <Box
-        width="100%"
-        flexDirection="column"
-        flexShrink={0}
-        marginTop={-offset}
-        paddingRight={2}
-      >
+    <Box width="100%" height={viewportHeight} flexDirection="column" flexShrink={0}>
+      <Box width="100%" flexDirection="column" flexShrink={0} marginTop={-offset} paddingRight={1}>
         {children}
       </Box>
 
-      <Box position="absolute" right={0} top={0} width={1} height={viewportHeight}>
+      <Box width={1} height={viewportHeight} flexShrink={0} marginLeft={-1}>
         <Text dimColor color={theme.muted}>
           {"│\n".repeat(Math.max(0, viewportHeight - 1))}│
         </Text>
       </Box>
 
       {hasOverflow && (
-        <Box position="absolute" right={0} top={thumbTop} width={1} height={thumbHeight}>
+        <Box width={1} height={thumbHeight} flexShrink={0} marginLeft={-1} marginTop={-viewportHeight + thumbTop}>
           <Text color={theme.muted}>
             {"┃\n".repeat(Math.max(0, thumbHeight - 1))}┃
           </Text>
