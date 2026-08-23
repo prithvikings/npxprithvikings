@@ -17,24 +17,13 @@ export type View =
 
 interface UsePortfolioInputProps {
   view: View;
-
   selectedIndex: number;
   selectedProjectIndex: number;
   selectedContactIndex: number;
-
   setView: (view: View) => void;
-
-  setSelectedIndex: (
-    updater: (current: number) => number
-  ) => void;
-
-  setSelectedProjectIndex: (
-    updater: (current: number) => number
-  ) => void;
-
-  setSelectedContactIndex: (
-    updater: (current: number) => number
-  ) => void;
+  setSelectedIndex: (updater: (current: number) => number) => void;
+  setSelectedProjectIndex: (updater: (current: number) => number) => void;
+  setSelectedContactIndex: (updater: (current: number) => number) => void;
 }
 
 export function usePortfolioInput({
@@ -48,51 +37,27 @@ export function usePortfolioInput({
   setSelectedContactIndex,
 }: UsePortfolioInputProps) {
   useInput((input, key) => {
-    // -------------------------
-    // QUIT
-    // -------------------------
-
-    if (input === "q") {
-      process.exit(0);
-    }
-
-    // -------------------------
-    // WELCOME
-    // -------------------------
+    if (input === "q") process.exit(0);
 
     if (view === "welcome") {
-      if (key.return) {
-        setView("home");
-      }
-
+      if (key.return) setView("home");
       return;
     }
 
-    // -------------------------
-    // HOME
-    // -------------------------
-
     if (view === "home") {
-      if (key.upArrow) {
+      // Up/down scroll the content viewport. Left/right switch tabs.
+      if (key.leftArrow) {
         setSelectedIndex((current) =>
-          current === 0
-            ? navigationItems.length - 1
-            : current - 1
+          current === 0 ? navigationItems.length - 1 : current - 1,
         );
       }
-
-      if (key.downArrow) {
+      if (key.rightArrow) {
         setSelectedIndex((current) =>
-          current === navigationItems.length - 1
-            ? 0
-            : current + 1
+          current === navigationItems.length - 1 ? 0 : current + 1,
         );
       }
-
       if (key.return) {
-        const page =
-          navigationItems[selectedIndex].page;
-
+        const page = navigationItems[selectedIndex].page;
         if (page === "projects") {
           setSelectedProjectIndex(() => 0);
           setView("project-list");
@@ -100,97 +65,55 @@ export function usePortfolioInput({
           setView(page);
         }
       }
-
       return;
     }
-
-    // -------------------------
-    // PROJECT LIST
-    // -------------------------
 
     if (view === "project-list") {
       if (key.escape) {
         setView("home");
         return;
       }
-
       if (key.upArrow) {
         setSelectedProjectIndex((current) =>
-          current === 0
-            ? projects.length - 1
-            : current - 1
+          current === 0 ? projects.length - 1 : current - 1,
         );
       }
-
       if (key.downArrow) {
         setSelectedProjectIndex((current) =>
-          current === projects.length - 1
-            ? 0
-            : current + 1
+          current === projects.length - 1 ? 0 : current + 1,
         );
       }
-
-      if (key.return) {
-        setView("project-details");
-      }
-
+      if (key.return) setView("project-details");
       return;
     }
-
-    // -------------------------
-    // PROJECT DETAILS
-    // -------------------------
 
     if (view === "project-details") {
-      if (key.escape) {
-        setView("project-list");
-      }
-
+      if (key.escape) setView("project-list");
       return;
     }
-
-    // -------------------------
-    // CONTACT
-    // -------------------------
 
     if (view === "contact") {
       if (key.escape) {
         setView("home");
         return;
       }
-
       if (key.upArrow) {
         setSelectedContactIndex((current) =>
-          current === 0
-            ? contactLinks.length - 1
-            : current - 1
+          current === 0 ? contactLinks.length - 1 : current - 1,
         );
       }
-
       if (key.downArrow) {
         setSelectedContactIndex((current) =>
-          current === contactLinks.length - 1
-            ? 0
-            : current + 1
+          current === contactLinks.length - 1 ? 0 : current + 1,
         );
       }
-
       if (key.return) {
-        const { url } =
-          contactLinks[selectedContactIndex];
-
+        const { url } = contactLinks[selectedContactIndex];
         openUrl(url);
       }
-
       return;
     }
 
-    // -------------------------
-    // OTHER PAGES
-    // -------------------------
-
-    if (key.escape) {
-      setView("home");
-    }
+    if (key.escape) setView("home");
   });
 }
