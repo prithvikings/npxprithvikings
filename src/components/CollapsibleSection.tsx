@@ -26,12 +26,23 @@ export default function CollapsibleSection({
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({ id, autoFocus: index === 0 });
   const headerRef = useRef<DOMElement | null>(null);
+  const wasFocusedRef = useRef(false);
 
   useLayoutEffect(() => {
     const layout = headerRef.current?.yogaNode?.getComputedLayout();
     if (!layout) return;
+
     onPosition(id, layout.top, layout.height);
-    if (isFocused) onFocused(index, layout.top, layout.height);
+
+    // Only auto-scroll when focus actually moves onto this section.
+    // Calling onFocused on every layout pass creates a feedback loop:
+    // scrolling changes the layout, the focused section re-runs this effect,
+    // and it forces the scroll offset back toward the selected section.
+    if (isFocused && !wasFocusedRef.current) {
+      onFocused(index, layout.top, layout.height);
+    }
+
+    wasFocusedRef.current = isFocused;
   });
 
   useInput(
