@@ -27,13 +27,13 @@ export default function TerminalLayout({
         paddingX={2}
       >
         {showHeader && <Header />}
-
         {showHeader && <Text> </Text>}
 
         {children}
 
         {footer && (
           <Box
+            width="100%"
             marginTop={1}
             paddingTop={1}
             borderStyle="single"
