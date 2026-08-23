@@ -16,7 +16,6 @@ import { theme } from "../theme.js";
 interface HomeProps { selectedIndex: number; }
 interface SectionPosition { top: number; height: number; }
 
-const SCROLL_MAX = 50;
 const SCROLL_STEP = 2;
 const MOUSE_SCROLL_STEP = 3;
 const SECTION_IDS = ["section-about", "section-experience", "section-projects", "section-stack", "section-highlights"];
@@ -31,18 +30,27 @@ export default function Home({ selectedIndex }: HomeProps) {
   const { rows } = useTerminalSize();
   const { focus, activeId } = useFocusManager();
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [viewportTop, setViewportTop] = useState(0);
   const sectionPositions = useRef<Record<string, SectionPosition>>({});
   const viewportRef = useRef<DOMElement | null>(null);
+  const contentRef = useRef<DOMElement | null>(null);
   const currentRole = experience[0];
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
+  const maxScrollOffset = Math.max(0, contentHeight - viewportHeight);
 
   useLayoutEffect(() => {
-    const layout = viewportRef.current?.yogaNode?.getComputedLayout();
-    if (layout && layout.top !== viewportTop) setViewportTop(layout.top);
+    const viewportLayout = viewportRef.current?.yogaNode?.getComputedLayout();
+    const contentLayout = contentRef.current?.yogaNode?.getComputedLayout();
+    if (viewportLayout && viewportLayout.top !== viewportTop) setViewportTop(viewportLayout.top);
+    if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height);
   });
+
+  useEffect(() => {
+    setScrollOffset((current) => Math.min(current, maxScrollOffset));
+  }, [maxScrollOffset]);
 
   const handlePosition = (id: string, top: number, height: number) => {
     sectionPositions.current[id] = { top, height };
@@ -51,8 +59,8 @@ export default function Home({ selectedIndex }: HomeProps) {
   const handleFocus = (_index: number, top: number, height: number) => {
     setScrollOffset((current) => {
       const bottom = top + height;
-      if (top < 0) return Math.max(0, Math.min(SCROLL_MAX, current + top));
-      if (bottom > viewportHeight) return Math.max(0, Math.min(SCROLL_MAX, current + bottom - viewportHeight));
+      if (top < 0) return Math.max(0, Math.min(maxScrollOffset, current + top));
+      if (bottom > viewportHeight) return Math.max(0, Math.min(maxScrollOffset, current + bottom - viewportHeight));
       return current;
     });
   };
@@ -85,13 +93,12 @@ export default function Home({ selectedIndex }: HomeProps) {
           continue;
         }
         if (button === 65) {
-          setScrollOffset((current) => Math.min(SCROLL_MAX, current + MOUSE_SCROLL_STEP));
+          setScrollOffset((current) => Math.min(maxScrollOffset, current + MOUSE_SCROLL_STEP));
           continue;
         }
 
         if (button === 0 && match[4] === "M") {
           if (mouseY < viewportTop || mouseY >= viewportTop + viewportHeight || mouseX < 0) continue;
-
           for (const id of SECTION_IDS) {
             const position = sectionPositions.current[id];
             if (!position) continue;
@@ -114,11 +121,11 @@ export default function Home({ selectedIndex }: HomeProps) {
       stdin.off("data", handleMouseData);
       stdout.write("\x1b[?1006l\x1b[?1000l");
     };
-  }, [focus, viewportHeight, viewportTop]);
+  }, [focus, maxScrollOffset, viewportHeight, viewportTop]);
 
   useInput((input, key) => {
     if (key.downArrow || key.pageDown || input === "j") {
-      setScrollOffset((current) => Math.min(SCROLL_MAX, current + (key.pageDown ? 10 : SCROLL_STEP)));
+      setScrollOffset((current) => Math.min(maxScrollOffset, current + (key.pageDown ? 10 : SCROLL_STEP)));
       return;
     }
     if (key.upArrow || key.pageUp || input === "k") {
@@ -126,10 +133,10 @@ export default function Home({ selectedIndex }: HomeProps) {
       return;
     }
     if (key.home) { setScrollOffset(0); return; }
-    if (key.end) setScrollOffset(SCROLL_MAX);
+    if (key.end) setScrollOffset(maxScrollOffset);
   });
 
-  const progress = Math.round((scrollOffset / SCROLL_MAX) * 100);
+  const progress = maxScrollOffset === 0 ? 0 : Math.round((scrollOffset / maxScrollOffset) * 100);
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -144,8 +151,8 @@ export default function Home({ selectedIndex }: HomeProps) {
       <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
 
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
-        <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={SCROLL_MAX}>
-          <Box width="100%" flexDirection="column" paddingRight={1}>
+        <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}>
+          <Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
             <Box width="100%" alignItems="flex-start"><Text bold color={theme.primary}>{nameArt}</Text></Box>
             <Box width="100%" justifyContent="space-between" marginTop={0}>
               <Box flexDirection="column" width="70%">
