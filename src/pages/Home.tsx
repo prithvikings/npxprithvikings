@@ -42,6 +42,7 @@ export default function Home({ selectedIndex }: HomeProps) {
   const maxScrollOffsetRef = useRef(0);
   const viewportTopRef = useRef(0);
   const viewportHeightRef = useRef(0);
+  const pendingFocusRef = useRef<string | null>(null);
   const currentRole = experience[0];
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
@@ -69,15 +70,38 @@ export default function Home({ selectedIndex }: HomeProps) {
     sectionPositions.current[id] = { top, height };
   }, []);
 
-  const handleFocus = useCallback((_index: number, top: number, height: number) => {
+  const handleFocus = useCallback((id: string) => {
+    pendingFocusRef.current = id;
+  }, []);
+
+  // Resolve a newly focused section against the latest measured layout. The
+  // section positions are in content-space, so the calculation remains valid
+  // regardless of the current scroll offset. Only scroll when the header is
+  // actually outside the viewport; never reset an already-valid scroll.
+  useLayoutEffect(() => {
+    const id = pendingFocusRef.current;
+    if (!id) return;
+
+    const position = sectionPositions.current[id];
+    if (!position) return;
+
+    pendingFocusRef.current = null;
     setScrollOffset((current) => {
-      const visibleTop = top - current;
-      const visibleBottom = visibleTop + height;
-      if (visibleTop < 0) return Math.max(0, Math.min(maxScrollOffsetRef.current, current + visibleTop));
-      if (visibleBottom > viewportHeightRef.current) return Math.max(0, Math.min(maxScrollOffsetRef.current, current + visibleBottom - viewportHeightRef.current));
+      const viewportHeightNow = viewportHeightRef.current;
+      const top = position.top;
+      const bottom = position.top + position.height;
+      const visibleTop = current;
+      const visibleBottom = current + viewportHeightNow;
+
+      if (top < visibleTop) {
+        return Math.max(0, Math.min(maxScrollOffsetRef.current, top));
+      }
+      if (bottom > visibleBottom) {
+        return Math.max(0, Math.min(maxScrollOffsetRef.current, bottom - viewportHeightNow));
+      }
       return current;
     });
-  }, []);
+  });
 
   const toggleSection = useCallback((id: string) => {
     setCollapsed((current) => ({ ...current, [id]: !current[id] }));
