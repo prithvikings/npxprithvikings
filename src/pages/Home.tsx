@@ -36,7 +36,7 @@ export default function Home({ selectedIndex }: HomeProps) {
   const { rows } = useWindowSize();
   const [progress, setProgress] = useState(0);
   const currentRole = experience[0];
-  const viewportHeight = Math.max(8, rows - 11);
+  const viewportHeight = Math.max(8, rows - 6);
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -53,9 +53,13 @@ export default function Home({ selectedIndex }: HomeProps) {
         </Box>
       </Box>
 
-      <Text dimColor>────────────────────────────────────────────────────────────────────────────────────</Text>
+      <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
 
-      <ScrollViewport height={viewportHeight} onProgressChange={setProgress}>
+      <ScrollViewport
+        height={viewportHeight}
+        contentHeight={64}
+        onProgressChange={setProgress}
+      >
         <Box width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start">
             <Text bold color={theme.primary}>{nameArt}</Text>
