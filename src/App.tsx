@@ -60,7 +60,11 @@ export default function App({
     // -------------------------
 
     if (view === "welcome") {
-      return <Welcome />;
+      return (
+        <Welcome
+          onContinue={() => setView("home")}
+        />
+      );
     }
 
     // -------------------------
