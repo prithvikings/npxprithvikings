@@ -22,8 +22,13 @@ interface AppProps {
 export default function App({
   initialView = "welcome",
 }: AppProps) {
+  const resolvedInitialView =
+    initialView === "home" && !process.argv[2]
+      ? "welcome"
+      : initialView;
+
   const [view, setView] =
-    useState<View>(initialView);
+    useState<View>(resolvedInitialView);
 
   const [selectedIndex, setSelectedIndex] =
     useState(0);
