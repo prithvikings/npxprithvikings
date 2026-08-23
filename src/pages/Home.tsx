@@ -9,6 +9,7 @@ import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
 import { experience } from "../data/experience.js";
+import { projects } from "../data/projects.js";
 import { theme } from "../theme.js";
 
 interface HomeProps {
@@ -37,6 +38,7 @@ export default function Home({ selectedIndex }: HomeProps) {
   const { rows } = useTerminalSize();
   const [progress, setProgress] = useState(0);
   const currentRole = experience[0];
+  const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
 
   return (
@@ -55,7 +57,7 @@ export default function Home({ selectedIndex }: HomeProps) {
 
       <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
 
-      <ScrollViewport height={viewportHeight} contentHeight={78} onProgressChange={setProgress}>
+      <ScrollViewport height={viewportHeight} contentHeight={110} onProgressChange={setProgress}>
         <Box width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start">
             <Text bold color={theme.primary}>{nameArt}</Text>
@@ -76,8 +78,11 @@ export default function Home({ selectedIndex }: HomeProps) {
             <SectionTitle title="about" />
             <Text> </Text>
             <Text wrap="wrap">{profile.summary}</Text>
-            <Text> </Text>
-            <Text dimColor wrap="wrap">I enjoy turning product ideas into reliable systems, from clean interfaces and APIs to the infrastructure that keeps them fast.</Text>
+            {profile.about.map((paragraph) => (
+              <Box key={paragraph} marginTop={1}>
+                <Text dimColor wrap="wrap">{paragraph}</Text>
+              </Box>
+            ))}
           </Box>
 
           <Box marginTop={1} flexDirection="column">
@@ -95,6 +100,19 @@ export default function Home({ selectedIndex }: HomeProps) {
             <Text wrap="wrap">{currentRole.description}</Text>
             <Text> </Text>
             {currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}
+          </Box>
+
+          <Box marginTop={1} flexDirection="column">
+            <SectionTitle title="projects" />
+            <Text> </Text>
+            {featuredProjects.map((project) => (
+              <Box key={project.id} flexDirection="column" marginBottom={1}>
+                <Text bold>{project.name}</Text>
+                <Text wrap="wrap">{project.shortDescription}</Text>
+                <Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text>
+                <Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text>
+              </Box>
+            ))}
           </Box>
 
           <Box marginTop={1} flexDirection="column">
