@@ -1,5 +1,5 @@
 import { Box, Text, type DOMElement, useFocus, useInput } from "ink";
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 
 import { theme } from "../theme.js";
 
@@ -9,7 +9,7 @@ interface CollapsibleSectionProps {
   title: string;
   collapsed: boolean;
   onToggle: (id: string) => void;
-  onFocused: (index: number, top: number, height: number) => void;
+  onFocused: (id: string) => void;
   onPosition: (id: string, top: number, height: number) => void;
   children: ReactNode;
 }
@@ -28,8 +28,8 @@ export default function CollapsibleSection({
   const headerRef = useRef<DOMElement | null>(null);
   const layoutRef = useRef({ top: 0, height: 1 });
 
-  // Keep the section's current position up to date without causing a focus /
-  // scroll feedback loop.
+  // Measure the section after every layout pass. The parent keeps these
+  // coordinates in content-space, independent of the current scroll offset.
   useLayoutEffect(() => {
     const layout = headerRef.current?.yogaNode?.getComputedLayout();
     if (!layout) return;
@@ -38,15 +38,14 @@ export default function CollapsibleSection({
     onPosition(id, layout.top, layout.height);
   });
 
-  // Scroll only when keyboard/tab focus actually enters this section. This is
-  // deliberately separate from layout measurement so ordinary scrolling does
-  // not re-trigger the auto-scroll logic.
-  useEffect(() => {
+  // Focus changes happen during the same layout cycle as the measurement
+  // above. Let the parent perform the actual scroll calculation after all
+  // sections have reported their current positions. This avoids using stale
+  // coordinates and prevents the viewport from snapping back to the top.
+  useLayoutEffect(() => {
     if (!isFocused) return;
-
-    const { top, height } = layoutRef.current;
-    onFocused(index, top, height);
-  }, [isFocused, index, onFocused]);
+    onFocused(id);
+  }, [isFocused, id, onFocused]);
 
   useInput(
     (_input, key) => {
