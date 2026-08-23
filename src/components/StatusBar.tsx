@@ -28,7 +28,7 @@ export default function StatusBar({ progress = 0 }: StatusBarProps) {
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
-      <Text dimColor>{"─".repeat(78)}</Text>
+      <Text dimColor>{"─".repeat(96)}</Text>
       <Box width="100%" justifyContent="space-between">
         <Box>
           <Text dimColor>{time}</Text>
