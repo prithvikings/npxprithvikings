@@ -1,4 +1,4 @@
-import { useInput } from "ink";
+import { useFocusManager, useInput } from "ink";
 
 import { navigationItems } from "../data/navigation.js";
 import { projects } from "../data/projects.js";
@@ -36,6 +36,8 @@ export function usePortfolioInput({
   setSelectedProjectIndex,
   setSelectedContactIndex,
 }: UsePortfolioInputProps) {
+  const { activeId } = useFocusManager();
+
   useInput((input, key) => {
     if (input === "q") process.exit(0);
 
@@ -44,20 +46,15 @@ export function usePortfolioInput({
       return;
     }
 
-    // Home scrolling is handled by Home.tsx so the viewport owns its
-    // scrolling state. The root handler only owns horizontal navigation.
     if (view === "home") {
       if (key.leftArrow) {
-        setSelectedIndex((current) =>
-          current === 0 ? navigationItems.length - 1 : current - 1,
-        );
+        setSelectedIndex((current) => current === 0 ? navigationItems.length - 1 : current - 1);
       }
       if (key.rightArrow) {
-        setSelectedIndex((current) =>
-          current === navigationItems.length - 1 ? 0 : current + 1,
-        );
+        setSelectedIndex((current) => current === navigationItems.length - 1 ? 0 : current + 1);
       }
-      if (key.return) {
+
+      if (key.return && key.ctrl) {
         const page = navigationItems[selectedIndex].page;
         if (page === "projects") {
           setSelectedProjectIndex(() => 0);
@@ -65,25 +62,17 @@ export function usePortfolioInput({
         } else {
           setView(page);
         }
+        return;
       }
+
+      if (key.return && activeId?.startsWith("section-")) return;
       return;
     }
 
     if (view === "project-list") {
-      if (key.escape) {
-        setView("home");
-        return;
-      }
-      if (key.upArrow) {
-        setSelectedProjectIndex((current) =>
-          current === 0 ? projects.length - 1 : current - 1,
-        );
-      }
-      if (key.downArrow) {
-        setSelectedProjectIndex((current) =>
-          current === projects.length - 1 ? 0 : current + 1,
-        );
-      }
+      if (key.escape) { setView("home"); return; }
+      if (key.upArrow) setSelectedProjectIndex((current) => current === 0 ? projects.length - 1 : current - 1);
+      if (key.downArrow) setSelectedProjectIndex((current) => current === projects.length - 1 ? 0 : current + 1);
       if (key.return) setView("project-details");
       return;
     }
@@ -94,24 +83,10 @@ export function usePortfolioInput({
     }
 
     if (view === "contact") {
-      if (key.escape) {
-        setView("home");
-        return;
-      }
-      if (key.upArrow) {
-        setSelectedContactIndex((current) =>
-          current === 0 ? contactLinks.length - 1 : current - 1,
-        );
-      }
-      if (key.downArrow) {
-        setSelectedContactIndex((current) =>
-          current === contactLinks.length - 1 ? 0 : current + 1,
-        );
-      }
-      if (key.return) {
-        const { url } = contactLinks[selectedContactIndex];
-        openUrl(url);
-      }
+      if (key.escape) { setView("home"); return; }
+      if (key.upArrow) setSelectedContactIndex((current) => current === 0 ? contactLinks.length - 1 : current - 1);
+      if (key.downArrow) setSelectedContactIndex((current) => current === contactLinks.length - 1 ? 0 : current + 1);
+      if (key.return) openUrl(contactLinks[selectedContactIndex].url);
       return;
     }
 
