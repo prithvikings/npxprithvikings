@@ -14,15 +14,15 @@ export default function TerminalLayout({
   footer,
   showHeader = true,
 }: TerminalLayoutProps) {
+  // Ink's Box does not support CSS-style `maxWidth`.
+  // Cap the content width manually while keeping it centered in the terminal.
+  const terminalWidth = process.stdout.columns ?? 118;
+  const contentWidth = Math.min(terminalWidth, 118);
+
   return (
-    <Box
-      width="100%"
-      flexDirection="column"
-      alignItems="center"
-    >
+    <Box width="100%" flexDirection="column" alignItems="center">
       <Box
-        width="100%"
-        maxWidth={118}
+        width={contentWidth}
         flexDirection="column"
         paddingX={2}
       >
