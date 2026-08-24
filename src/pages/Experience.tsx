@@ -60,7 +60,6 @@ export default function Experience({ selectedIndex = 2, onNavigate = () => {} }:
           onPosition={() => {}}
           onHeaderPosition={() => {}}
           showIndex
-          compact
         >
           <Box marginTop={1} marginLeft={2} flexDirection="column">
             <Box width="100%" flexDirection="row" justifyContent="space-between">
