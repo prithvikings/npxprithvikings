@@ -14,6 +14,7 @@ interface CollapsibleSectionProps {
   onHeaderPosition: (id: string, top: number, height: number) => void;
   children: ReactNode;
   compact?: boolean;
+  showIndex?: boolean;
 }
 
 export default function CollapsibleSection({
@@ -27,6 +28,7 @@ export default function CollapsibleSection({
   onHeaderPosition,
   children,
   compact = false,
+  showIndex = false,
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({ id, autoFocus: index === 0 });
   const sectionRef = useRef<DOMElement | null>(null);
@@ -55,6 +57,8 @@ export default function CollapsibleSection({
     { isActive: isFocused },
   );
 
+  const indexLabel = `${String(index + 1).padStart(2, "0")}  `;
+
   return (
     <Box ref={sectionRef} flexDirection="column" marginTop={compact ? 0 : 1}>
       <Box
@@ -62,18 +66,28 @@ export default function CollapsibleSection({
         width="100%"
         height={1}
         flexDirection="row"
+        alignItems="center"
         aria-role="button"
         aria-label={`${title} section`}
         aria-state={{ expanded: !collapsed, selected: isFocused }}
       >
-        <Text color={isFocused ? theme.primary : theme.muted}>
-          {collapsed ? "▸ " : "▾ "}
-        </Text>
-        <Text bold={isFocused || !collapsed} color={isFocused ? theme.primary : undefined}>
-          {title}
-        </Text>
-        <Box flexGrow={1} marginLeft={1}>
-          <Text dimColor>────────────────────────────────────────────────────────────────</Text>
+        {showIndex && (
+          <Box flexShrink={0}>
+            <Text color={isFocused ? theme.primary : undefined}>{indexLabel}</Text>
+          </Box>
+        )}
+        <Box flexShrink={0}>
+          <Text color={isFocused ? theme.primary : theme.muted}>
+            {collapsed ? "▸ " : "▾ "}
+          </Text>
+        </Box>
+        <Box flexShrink={0}>
+          <Text bold={isFocused || !collapsed} color={isFocused ? theme.primary : undefined}>
+            {title}
+          </Text>
+        </Box>
+        <Box flexGrow={1} flexShrink={1} minWidth={1} marginLeft={1} overflow="hidden">
+          <Text dimColor>{"─".repeat(120)}</Text>
         </Box>
       </Box>
       {!collapsed && <Box flexDirection="column">{children}</Box>}
