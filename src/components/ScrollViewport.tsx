@@ -27,7 +27,7 @@ export default function ScrollViewport({
 
   const scrollbar = Array.from({ length: height }, (_, index) => {
     const isThumb = hasOverflow && index >= thumbTop && index < thumbTop + thumbHeight;
-    return isThumb ? "┃" : "│";
+    return isThumb ? "┃ " : "│ ";
   }).join("\n");
 
   return (
@@ -51,7 +51,7 @@ export default function ScrollViewport({
         </Box>
       </Box>
 
-      <Box width={1} height={height} flexShrink={0}>
+      <Box width={2} height={height} flexShrink={0}>
         <Text color={hasOverflow ? theme.muted : undefined} dimColor={!hasOverflow}>
           {scrollbar}
         </Text>

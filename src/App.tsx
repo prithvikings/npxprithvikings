@@ -31,17 +31,14 @@ export default function App({
   const [view, setView] = useState<View>(resolvedInitialView);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedProjectIndex, setSelectedProjectIndex] = useState(0);
-  const [selectedContactIndex, setSelectedContactIndex] = useState(0);
 
   usePortfolioInput({
     view,
     selectedIndex,
     selectedProjectIndex,
-    selectedContactIndex,
     setView,
     setSelectedIndex,
     setSelectedProjectIndex,
-    setSelectedContactIndex,
   });
 
   const handleNavigation = (page: string, index: number) => {
@@ -95,22 +92,8 @@ export default function App({
         <PageRenderer
           page={view}
           selectedIndex={selectedIndex}
-          selectedContactIndex={selectedContactIndex}
           onNavigate={handleNavigation}
         />
-      );
-    }
-
-    if (view === "contact") {
-      return (
-        <TerminalLayout footer="ESC Back • Q Quit">
-          <PageRenderer
-            page={view}
-            selectedIndex={selectedIndex}
-            selectedContactIndex={selectedContactIndex}
-            onNavigate={handleNavigation}
-          />
-        </TerminalLayout>
       );
     }
 

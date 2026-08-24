@@ -6,11 +6,13 @@ import CollapsibleSection from "../components/CollapsibleSection.js";
 import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
 import StatusBar from "../components/StatusBar.js";
+import TerminalLink from "../components/TerminalLink.js";
 import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
 import { experience } from "../data/experience.js";
 import { projects } from "../data/projects.js";
+import { contact } from "../data/contact.js";
 import { theme } from "../theme.js";
 
 interface HomeProps {
@@ -21,7 +23,14 @@ interface SectionPosition { top: number; height: number; }
 
 const SCROLL_STEP = 2;
 const MOUSE_SCROLL_STEP = 3;
-const SECTION_IDS = ["section-about", "section-experience", "section-projects", "section-stack", "section-highlights"];
+const SECTION_IDS = [
+  "section-about",
+  "section-experience",
+  "section-projects",
+  "section-stack",
+  "section-highlights",
+  "section-connect",
+];
 
 const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "default", verticalLayout: "default" });
 
@@ -117,9 +126,20 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
           <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
           <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
           <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+          <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition}>
+            <Box marginTop={1} flexDirection="column">
+              <Box flexDirection="row" gap={2}>
+                <TerminalLink url={contact.github}>[ github ]</TerminalLink>
+                <TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink>
+              </Box>
+              <Box marginTop={1}>
+                <Text dimColor>Email contact is not currently present in the repository data.</Text>
+              </Box>
+            </Box>
+          </CollapsibleSection>
         </Box></ScrollViewport>
       </Box>
-      <StatusBar progress={progress} /><Text dimColor>tab select • enter fold • click toggle</Text>
+      <StatusBar progress={progress} />
     </Box>
   );
 }
