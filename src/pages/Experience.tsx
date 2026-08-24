@@ -2,6 +2,7 @@ import { Box, Text, useFocusManager, useInput } from "ink";
 import { useCallback, useState } from "react";
 
 import CollapsibleSection from "../components/CollapsibleSection.js";
+import PageFooter from "../components/PageFooter.js";
 import ScrollPageLayout from "../components/ScrollPageLayout.js";
 import { experience } from "../data/experience.js";
 
@@ -72,7 +73,6 @@ export default function Experience({ selectedIndex = 2, onNavigate = () => {} }:
                 {item.location && <Text dimColor>{item.location}</Text>}
               </Box>
             </Box>
-
             <Box marginTop={1}>
               <Text wrap="wrap">{item.description}</Text>
             </Box>
@@ -112,6 +112,8 @@ export default function Experience({ selectedIndex = 2, onNavigate = () => {} }:
             ))}
           </Box>
         </CollapsibleSection>
+
+        <PageFooter />
       </Box>
     </ScrollPageLayout>
   );

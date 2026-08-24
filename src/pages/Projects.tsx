@@ -2,6 +2,7 @@ import { Box, Text, useFocusManager, useInput } from "ink";
 import { useCallback, useState } from "react";
 
 import CollapsibleSection from "../components/CollapsibleSection.js";
+import PageFooter from "../components/PageFooter.js";
 import ScrollPageLayout from "../components/ScrollPageLayout.js";
 import TerminalLink from "../components/TerminalLink.js";
 import { projects } from "../data/projects.js";
@@ -66,17 +67,14 @@ export default function Projects({ onNavigate, selectedIndex }: ProjectsProps) {
                 <Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text>
                 <Text> </Text>
                 <Box flexDirection="row" gap={2}>
-                  {project.links.demo && (
-                    <TerminalLink url={project.links.demo}>[ live ↗ ]</TerminalLink>
-                  )}
-                  {project.links.github && (
-                    <TerminalLink url={project.links.github}>[ code ↗ ]</TerminalLink>
-                  )}
+                  {project.links.demo && <TerminalLink url={project.links.demo}>[ live ↗ ]</TerminalLink>}
+                  {project.links.github && <TerminalLink url={project.links.github}>[ code ↗ ]</TerminalLink>}
                 </Box>
               </Box>
             </CollapsibleSection>
           );
         })}
+        <PageFooter />
       </Box>
     </ScrollPageLayout>
   );

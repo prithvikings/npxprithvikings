@@ -2,10 +2,10 @@ import { Box, Text, useFocusManager, useInput } from "ink";
 import { useCallback, useState } from "react";
 
 import CollapsibleSection from "../components/CollapsibleSection.js";
+import PageFooter from "../components/PageFooter.js";
 import ScrollPageLayout from "../components/ScrollPageLayout.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
-import { theme } from "../theme.js";
 
 interface AboutProps {
   selectedIndex?: number;
@@ -84,12 +84,7 @@ export default function About({ selectedIndex = 1, onNavigate = () => {} }: Abou
           showIndex
         >
           <Box marginTop={1} marginLeft={2} flexDirection="column">
-            {[
-              "Full-stack web development",
-              "Backend architecture",
-              "Developer tooling",
-              "AI-powered applications",
-            ].map((item) => (
+            {["Full-stack web development", "Backend architecture", "Developer tooling", "AI-powered applications"].map((item) => (
               <Text key={item}>· {item}</Text>
             ))}
           </Box>
@@ -134,11 +129,7 @@ export default function About({ selectedIndex = 1, onNavigate = () => {} }: Abou
           </Box>
         </CollapsibleSection>
 
-        <Box marginTop={2}>
-          <Text color={theme.primary} dimColor>
-            profile / developer / builder
-          </Text>
-        </Box>
+        <PageFooter />
       </Box>
     </ScrollPageLayout>
   );
