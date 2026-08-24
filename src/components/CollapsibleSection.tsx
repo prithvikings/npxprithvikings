@@ -13,6 +13,7 @@ interface CollapsibleSectionProps {
   onPosition: (id: string, top: number, height: number) => void;
   onHeaderPosition: (id: string, top: number, height: number) => void;
   children: ReactNode;
+  compact?: boolean;
 }
 
 export default function CollapsibleSection({
@@ -25,6 +26,7 @@ export default function CollapsibleSection({
   onPosition,
   onHeaderPosition,
   children,
+  compact = false,
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({ id, autoFocus: index === 0 });
   const sectionRef = useRef<DOMElement | null>(null);
@@ -54,7 +56,7 @@ export default function CollapsibleSection({
   );
 
   return (
-    <Box ref={sectionRef} flexDirection="column" marginTop={1}>
+    <Box ref={sectionRef} flexDirection="column" marginTop={compact ? 0 : 1}>
       <Box
         ref={headerRef}
         width="100%"
