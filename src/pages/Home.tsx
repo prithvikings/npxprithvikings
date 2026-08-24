@@ -137,9 +137,21 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
               </Box>
             </Box>
           </CollapsibleSection>
+
+          <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column">
+            <Text dimColor>“I was not born with a whole lot of natural talent... but I</Text>
+            <Text dimColor>work hard and I never give up.”</Text>
+            <Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box>
+          </Box>
+
+          <Box marginTop={2} flexDirection="column" alignItems="center">
+            <Text dimColor>© {new Date().getFullYear()} Prithvi Raj</Text>
+            <Text dimColor>Built with love, LLMs and patience.</Text>
+            <Text dimColor>@prithvikings</Text>
+          </Box>
         </Box></ScrollViewport>
       </Box>
-      <StatusBar progress={progress} />
+      <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
   );
 }
