@@ -113,9 +113,9 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       <Text dimColor>{"─".repeat(96)}</Text>
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
-          <Box width="100%" justifyContent="space-between" alignItems="flex-start">
-            <Box width="76%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
-            <Box width="20%" flexDirection="column" paddingTop={0} flexShrink={0}>
+          <Box width="100%" justifyContent="space-between" alignItems="center">
+            <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
+            <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
               <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
               <Text bold wrap="truncate">{profile.headerMotto}</Text>
               <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
