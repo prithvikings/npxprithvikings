@@ -1,4 +1,4 @@
-import { Box, Text, useStdin, useStdout, type DOMElement } from "ink";
+import { Box, Text, useInput, useStdin, useStdout, type DOMElement } from "ink";
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import Navigation from "./Navigation.js";
@@ -8,6 +8,7 @@ import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { theme } from "../theme.js";
 
 const MOUSE_SCROLL_STEP = 3;
+const KEY_SCROLL_STEP = 1;
 
 interface ScrollPageLayoutProps {
   activePage: string;
@@ -28,16 +29,14 @@ export default function ScrollPageLayout({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef<DOMElement | null>(null);
-  const scrollOffsetRef = useRef(0);
   const maxScrollOffsetRef = useRef(0);
 
   const viewportHeight = Math.max(8, rows - 7);
   const maxScrollOffset = Math.max(0, contentHeight - viewportHeight);
 
   useEffect(() => {
-    scrollOffsetRef.current = scrollOffset;
     maxScrollOffsetRef.current = maxScrollOffset;
-  }, [scrollOffset, maxScrollOffset]);
+  }, [maxScrollOffset]);
 
   useLayoutEffect(() => {
     const contentLayout = contentRef.current?.yogaNode?.getComputedLayout();
@@ -49,6 +48,18 @@ export default function ScrollPageLayout({
   useEffect(() => {
     setScrollOffset((current) => Math.min(current, maxScrollOffset));
   }, [maxScrollOffset]);
+
+  useInput((_, key) => {
+    if (key.upArrow) {
+      setScrollOffset((current) => Math.max(0, current - KEY_SCROLL_STEP));
+    }
+
+    if (key.downArrow) {
+      setScrollOffset((current) =>
+        Math.min(maxScrollOffsetRef.current, current + KEY_SCROLL_STEP),
+      );
+    }
+  });
 
   useEffect(() => {
     if (!stdin || !stdout) return;
@@ -108,24 +119,9 @@ export default function ScrollPageLayout({
     };
   }, [stdin, stdout]);
 
-  useEffect(() => {
-    const handleKeyScroll = (input: string, key: { upArrow?: boolean; downArrow?: boolean }) => {
-      if (key.upArrow) {
-        setScrollOffset((current) => Math.max(0, current - 1));
-      }
-      if (key.downArrow) {
-        setScrollOffset((current) => Math.min(maxScrollOffsetRef.current, current + 1));
-      }
-    };
-
-    // Ink's useInput is intentionally kept out of this shared layout so the
-    // existing portfolio input controller remains the single owner of keys.
-    void handleKeyScroll;
-  }, []);
-
   const progress = maxScrollOffset === 0
     ? 0
-    : Math.round((scrollOffset / maxScrollOffset) * 100);
+    : Math.round((Math.min(scrollOffset, maxScrollOffset) / maxScrollOffset) * 100);
 
   return (
     <Box width="100%" flexDirection="column" alignItems="center">
