@@ -87,7 +87,7 @@ export default function CollapsibleSection({
           </Text>
         </Box>
         <Box flexGrow={1} flexShrink={1} minWidth={1} marginLeft={1} overflow="hidden">
-          <Text dimColor>{"─".repeat(120)}</Text>
+          <Text dimColor wrap="truncate">{"─".repeat(120)}</Text>
         </Box>
       </Box>
       {!collapsed && <Box flexDirection="column">{children}</Box>}
