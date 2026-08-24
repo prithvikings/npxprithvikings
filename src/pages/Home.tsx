@@ -21,7 +21,7 @@ interface SectionPosition { top: number; height: number; }
 const SCROLL_STEP = 2;
 const MOUSE_SCROLL_STEP = 3;
 const SECTION_IDS = ["section-about", "section-experience", "section-projects", "section-stack", "section-highlights", "section-connect"];
-const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "default", verticalLayout: "default" });
+const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "full", verticalLayout: "default" });
 
 export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { rows } = useTerminalSize();
@@ -114,12 +114,12 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" justifyContent="space-between" alignItems="flex-start">
-            <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
-            <Box width="25%" flexDirection="column" paddingTop={0} flexShrink={0}>
+            <Box width="76%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
+            <Box width="20%" flexDirection="column" paddingTop={0} flexShrink={0}>
               <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-              <Box marginTop={1}><Text bold wrap="truncate">{profile.headerMotto}</Text></Box>
-              <Box marginTop={1}><Text bold dimColor wrap="truncate">⌂ {profile.location}</Text></Box>
-              <Box marginTop={1}><TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink></Box>
+              <Text bold wrap="truncate">{profile.headerMotto}</Text>
+              <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
+              <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
             </Box>
           </Box>
           <CollapsibleSection compact id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
