@@ -15,8 +15,4 @@ export const navigationItems = [
     label: "Projects",
     page: "projects",
   },
-  {
-    label: "Contact",
-    page: "contact",
-  },
 ] as const;
