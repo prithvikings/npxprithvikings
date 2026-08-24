@@ -129,8 +129,8 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" justifyContent="space-between" alignItems="flex-start">
-            <Box width="67%"><Text color={theme.text}>{nameArt}</Text></Box>
-            <Box width="30%" flexDirection="column" paddingTop={1}>
+            <Box width="72%"><Text color={theme.primary}>{nameArt}</Text></Box>
+            <Box width="27%" flexDirection="column" paddingTop={1}>
               <Text><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
               <Text wrap="wrap">{profile.headerMotto}</Text>
               <Text dimColor>⌂ {profile.location}</Text>
