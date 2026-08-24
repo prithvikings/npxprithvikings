@@ -32,6 +32,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const [contentHeight, setContentHeight] = useState(0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [viewportTop, setViewportTop] = useState(0);
+  const [headerMotto, setHeaderMotto] = useState("");
   const sectionPositions = useRef<Record<string, SectionPosition>>({});
   const headerPositions = useRef<Record<string, SectionPosition>>({});
   const viewportRef = useRef<DOMElement | null>(null);
@@ -49,6 +50,33 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   useEffect(() => { scrollOffsetRef.current = scrollOffset; maxScrollOffsetRef.current = maxScrollOffset; viewportTopRef.current = viewportTop; viewportHeightRef.current = viewportHeight; }, [scrollOffset, maxScrollOffset, viewportTop, viewportHeight]);
   useLayoutEffect(() => { const viewportLayout = viewportRef.current?.yogaNode?.getComputedLayout(); const contentLayout = contentRef.current?.yogaNode?.getComputedLayout(); if (viewportLayout && viewportLayout.top !== viewportTop) setViewportTop(viewportLayout.top); if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height); });
   useEffect(() => { setScrollOffset((current) => Math.min(current, maxScrollOffset)); }, [maxScrollOffset]);
+
+  useEffect(() => {
+    const phrases = profile.headerMottos;
+    let phraseIndex = 0;
+    let characterIndex = 0;
+    let deleting = false;
+    setHeaderMotto(phrases[0]);
+
+    const interval = setInterval(() => {
+      const phrase = phrases[phraseIndex];
+
+      if (!deleting) {
+        characterIndex += 1;
+        setHeaderMotto(phrase.slice(0, characterIndex));
+        if (characterIndex === phrase.length) deleting = true;
+      } else {
+        characterIndex -= 1;
+        setHeaderMotto(phrase.slice(0, characterIndex));
+        if (characterIndex === 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handlePosition = useCallback((id: string, top: number, height: number) => { sectionPositions.current[id] = { top, height }; }, []);
   const handleHeaderPosition = useCallback((id: string, top: number, height: number) => { headerPositions.current[id] = { top, height }; }, []);
@@ -117,7 +145,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
             <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
               <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-              <Text bold wrap="truncate">{profile.headerMotto}</Text>
+              <Text bold wrap="truncate">{headerMotto}</Text>
               <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
               <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
             </Box>
