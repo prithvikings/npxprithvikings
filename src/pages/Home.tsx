@@ -117,9 +117,9 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
             <Box width="25%" flexDirection="column" paddingTop={0} flexShrink={0}>
               <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-              <Text bold wrap="truncate">{profile.headerMotto}</Text>
-              <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
-              <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
+              <Box marginTop={1}><Text bold wrap="truncate">{profile.headerMotto}</Text></Box>
+              <Box marginTop={1}><Text bold dimColor wrap="truncate">⌂ {profile.location}</Text></Box>
+              <Box marginTop={1}><TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink></Box>
             </Box>
           </Box>
           <CollapsibleSection compact id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
