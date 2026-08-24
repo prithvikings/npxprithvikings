@@ -131,9 +131,10 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
               <Box flexDirection="row" gap={2}>
                 <TerminalLink url={contact.github}>[ github ]</TerminalLink>
                 <TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink>
+                <TerminalLink url={contact.email}>[ email ]</TerminalLink>
               </Box>
               <Box marginTop={1}>
-                <Text dimColor>Email contact is not currently present in the repository data.</Text>
+                <Text dimColor>click to open in your browser</Text>
               </Box>
             </Box>
           </CollapsibleSection>
@@ -145,9 +146,8 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
           </Box>
 
           <Box marginTop={2} flexDirection="column" alignItems="center">
-            <Text dimColor>© {new Date().getFullYear()} Prithvi Raj</Text>
+            <Text dimColor>© {new Date().getFullYear()} @prithvikings</Text>
             <Text dimColor>Built with love, LLMs and patience.</Text>
-            <Text dimColor>@prithvikings</Text>
           </Box>
         </Box></ScrollViewport>
       </Box>
