@@ -51,9 +51,11 @@ export default function ScrollViewport({
         </Box>
       </Box>
 
-      <Box width={1} height={height} flexShrink={0}>
+      <Box width={2} height={height} flexShrink={0}>
         <Text color={hasOverflow ? theme.muted : undefined} dimColor={!hasOverflow}>
-          {scrollbar}
+          {scrollbar.split("\n").map((line, index) => (
+            <Text key={index}>{line} </Text>
+          ))}
         </Text>
       </Box>
     </Box>
