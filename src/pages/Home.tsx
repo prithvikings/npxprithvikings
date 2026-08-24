@@ -129,11 +129,11 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" justifyContent="space-between" alignItems="flex-start">
-            <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
-            <Box width="25%" flexDirection="column" paddingTop={1}>
-              <Text><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-              <Text wrap="wrap">{profile.headerMotto}</Text>
-              <Text dimColor>⌂ {profile.location}</Text>
+            <Box width="78%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
+            <Box width="21%" flexDirection="column" paddingTop={0}>
+              <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
+              <Text bold wrap="wrap">{profile.headerMotto}</Text>
+              <Text bold dimColor>⌂ {profile.location}</Text>
               <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
             </Box>
           </Box>
