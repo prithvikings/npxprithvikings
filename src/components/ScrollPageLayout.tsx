@@ -161,7 +161,7 @@ export default function ScrollPageLayout({
           </ScrollViewport>
         </Box>
 
-        <StatusBar progress={progress} />
+        <StatusBar progress={progress} maxOffset={maxScrollOffset} />
       </Box>
     </Box>
   );
