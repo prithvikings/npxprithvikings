@@ -1,5 +1,5 @@
 import { Box, Text, useFocusManager, useInput } from "ink";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import CollapsibleSection from "../components/CollapsibleSection.js";
 import ScrollPageLayout from "../components/ScrollPageLayout.js";
@@ -22,39 +22,25 @@ const SECTION_IDS = [
 export default function About({ selectedIndex = 1, onNavigate = () => {} }: AboutProps) {
   const { focus } = useFocusManager();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [focusedSection, setFocusedSection] = useState(SECTION_IDS[0]);
 
   const toggleSection = useCallback((id: string) => {
     setCollapsed((current) => ({ ...current, [id]: !current[id] }));
   }, []);
 
-  const moveSectionFocus = useCallback((direction: 1 | -1) => {
-    const activeIdIndex = SECTION_IDS.findIndex((id) => {
-      // Ink's focus manager does not expose the active id, so this is driven by
-      // the focused-section callback below.
-      return false;
-    });
-    void activeIdIndex;
-    return direction;
-  }, []);
-
-  const [focusedSection, setFocusedSection] = useState(SECTION_IDS[0]);
-
   const handleFocused = useCallback((id: string) => {
     setFocusedSection(id);
   }, []);
 
-  useEffect(() => {
-    focus(focusedSection);
-  }, [focus, focusedSection]);
+  useInput((_, key) => {
+    if (!key.tab) return;
 
-  useInput((input, key) => {
-    if (key.tab) {
-      const currentIndex = SECTION_IDS.indexOf(focusedSection);
-      const nextIndex = key.shift
-        ? (currentIndex - 1 + SECTION_IDS.length) % SECTION_IDS.length
-        : (currentIndex + 1) % SECTION_IDS.length;
-      focus(SECTION_IDS[nextIndex]);
-    }
+    const currentIndex = SECTION_IDS.indexOf(focusedSection);
+    const nextIndex = key.shift
+      ? (currentIndex - 1 + SECTION_IDS.length) % SECTION_IDS.length
+      : (currentIndex + 1) % SECTION_IDS.length;
+
+    focus(SECTION_IDS[nextIndex]);
   });
 
   return (
