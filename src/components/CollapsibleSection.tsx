@@ -11,6 +11,7 @@ interface CollapsibleSectionProps {
   onToggle: (id: string) => void;
   onFocused: (id: string) => void;
   onPosition: (id: string, top: number, height: number) => void;
+  onHeaderPosition: (id: string, top: number, height: number) => void;
   children: ReactNode;
 }
 
@@ -22,15 +23,23 @@ export default function CollapsibleSection({
   onToggle,
   onFocused,
   onPosition,
+  onHeaderPosition,
   children,
 }: CollapsibleSectionProps) {
   const { isFocused } = useFocus({ id, autoFocus: index === 0 });
   const sectionRef = useRef<DOMElement | null>(null);
+  const headerRef = useRef<DOMElement | null>(null);
 
   useLayoutEffect(() => {
     const layout = sectionRef.current?.yogaNode?.getComputedLayout();
     if (!layout) return;
     onPosition(id, layout.top, layout.height);
+  });
+
+  useLayoutEffect(() => {
+    const layout = headerRef.current?.yogaNode?.getComputedLayout();
+    if (!layout) return;
+    onHeaderPosition(id, layout.top, layout.height);
   });
 
   useLayoutEffect(() => {
@@ -47,6 +56,7 @@ export default function CollapsibleSection({
   return (
     <Box ref={sectionRef} flexDirection="column" marginTop={1}>
       <Box
+        ref={headerRef}
         width="100%"
         height={1}
         flexDirection="row"
