@@ -9,26 +9,38 @@ export type Page =
 
 interface PageRendererProps {
   page: Page;
+  selectedIndex: number;
   selectedContactIndex: number;
+  onNavigate: (page: string, index: number) => void;
 }
 
 export default function PageRenderer({
   page,
+  selectedIndex,
   selectedContactIndex,
+  onNavigate,
 }: PageRendererProps) {
   switch (page) {
     case "about":
-      return <About />;
+      return (
+        <About
+          selectedIndex={selectedIndex}
+          onNavigate={onNavigate}
+        />
+      );
 
     case "experience":
-      return <Experience />;
+      return (
+        <Experience
+          selectedIndex={selectedIndex}
+          onNavigate={onNavigate}
+        />
+      );
 
     case "contact":
       return (
         <Contact
-          selectedContactIndex={
-            selectedContactIndex
-          }
+          selectedContactIndex={selectedContactIndex}
         />
       );
 
