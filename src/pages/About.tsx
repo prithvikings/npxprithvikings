@@ -59,7 +59,6 @@ export default function About({ selectedIndex = 1, onNavigate = () => {} }: Abou
           onFocused={handleFocused}
           onPosition={() => {}}
           onHeaderPosition={() => {}}
-          compact
           showIndex
         >
           <Box marginTop={1} marginLeft={2} flexDirection="column">
