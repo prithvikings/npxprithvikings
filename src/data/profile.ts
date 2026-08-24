@@ -1,9 +1,14 @@
 export const profile = {
   name: "Prithvi Raj",
   title: "Full Stack Developer",
-  age: 22,
+  age: 20,
   headerRole: "Engineer",
   headerMotto: "Trying to do better",
+  headerMottos: [
+    "Trying to do better",
+    "Always learning",
+    "Self improving",
+  ],
   tagline:
     "I build scalable web applications, developer tools, and AI-powered products.",
   location: "Jalandhar, India",
