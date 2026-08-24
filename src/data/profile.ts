@@ -1,11 +1,13 @@
 export const profile = {
   name: "Prithvi Raj",
   title: "Full Stack Developer",
-
+  age: 22,
+  headerRole: "Engineer",
+  headerMotto: "Trying to do better",
   tagline:
     "I build scalable web applications, developer tools, and AI-powered products.",
-
   location: "Jalandhar, Punjab, India",
+  website: "https://prithvikings.me/",
 
   summary:
     "Full Stack Developer focused on building modern web applications, developer tools, and AI-powered products. I enjoy working across the stack, from shaping clean interfaces and APIs to designing the backend systems that keep products reliable and fast.",
