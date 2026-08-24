@@ -26,6 +26,14 @@ interface UsePortfolioInputProps {
   setSelectedContactIndex: (updater: (current: number) => number) => void;
 }
 
+const mainNavigationViews = new Set<View>([
+  "home",
+  "about",
+  "experience",
+  "projects",
+  "contact",
+]);
+
 export function usePortfolioInput({
   view,
   selectedIndex,
@@ -44,10 +52,26 @@ export function usePortfolioInput({
       return;
     }
 
-    if (view === "home") {
-      if (key.leftArrow) setSelectedIndex((current) => current === 0 ? navigationItems.length - 1 : current - 1);
-      if (key.rightArrow) setSelectedIndex((current) => current === navigationItems.length - 1 ? 0 : current + 1);
+    // Left/right always moves through the top-level pages with wraparound.
+    // This is intentionally separate from project/contact item navigation,
+    // which keeps their own up/down controls.
+    if (mainNavigationViews.has(view) && (key.leftArrow || key.rightArrow)) {
+      setSelectedIndex((current) => {
+        const nextIndex = key.rightArrow
+          ? current === navigationItems.length - 1
+            ? 0
+            : current + 1
+          : current === 0
+            ? navigationItems.length - 1
+            : current - 1;
 
+        setView(navigationItems[nextIndex].page as View);
+        return nextIndex;
+      });
+      return;
+    }
+
+    if (view === "home") {
       // Section headers own plain Enter. Ctrl+Enter activates the selected
       // top navigation item without conflicting with section folding.
       if (key.return && key.ctrl) {
@@ -56,16 +80,27 @@ export function usePortfolioInput({
           setSelectedProjectIndex(() => 0);
           setView("project-list");
         } else {
-          setView(page);
+          setView(page as View);
         }
       }
       return;
     }
 
     if (view === "project-list") {
-      if (key.escape) { setView("home"); return; }
-      if (key.upArrow) setSelectedProjectIndex((current) => current === 0 ? projects.length - 1 : current - 1);
-      if (key.downArrow) setSelectedProjectIndex((current) => current === projects.length - 1 ? 0 : current + 1);
+      if (key.escape) {
+        setView("home");
+        return;
+      }
+      if (key.upArrow) {
+        setSelectedProjectIndex((current) =>
+          current === 0 ? projects.length - 1 : current - 1,
+        );
+      }
+      if (key.downArrow) {
+        setSelectedProjectIndex((current) =>
+          current === projects.length - 1 ? 0 : current + 1,
+        );
+      }
       if (key.return) setView("project-details");
       return;
     }
@@ -76,9 +111,20 @@ export function usePortfolioInput({
     }
 
     if (view === "contact") {
-      if (key.escape) { setView("home"); return; }
-      if (key.upArrow) setSelectedContactIndex((current) => current === 0 ? contactLinks.length - 1 : current - 1);
-      if (key.downArrow) setSelectedContactIndex((current) => current === contactLinks.length - 1 ? 0 : current + 1);
+      if (key.escape) {
+        setView("home");
+        return;
+      }
+      if (key.upArrow) {
+        setSelectedContactIndex((current) =>
+          current === 0 ? contactLinks.length - 1 : current - 1,
+        );
+      }
+      if (key.downArrow) {
+        setSelectedContactIndex((current) =>
+          current === contactLinks.length - 1 ? 0 : current + 1,
+        );
+      }
       if (key.return) openUrl(contactLinks[selectedContactIndex].url);
       return;
     }
