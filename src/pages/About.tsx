@@ -15,7 +15,7 @@ function RuleTitle({ index, title }: { index: string; title: string }) {
     <Box width="100%" flexDirection="row" alignItems="center">
       <Text bold>{index}  {title}</Text>
       <Box flexGrow={1} marginLeft={1}>
-        <Text dimColor>{"─".repeat(80)}</Text>
+        <Text dimColor wrap="truncate">{"─".repeat(120)}</Text>
       </Box>
     </Box>
   );
@@ -57,14 +57,7 @@ export default function About({ selectedIndex = 1, onNavigate = () => {} }: Abou
         </Box>
 
         <Box marginTop={1} marginBottom={1}>
-          <RuleTitle index="03" title="location" />
-        </Box>
-        <Box marginLeft={2}>
-          <Text dimColor>{profile.location}</Text>
-        </Box>
-
-        <Box marginTop={1} marginBottom={1}>
-          <RuleTitle index="04" title="core stack" />
+          <RuleTitle index="03" title="core stack" />
         </Box>
         <Box marginLeft={2} flexDirection="column">
           {skills.map((group) => (
@@ -76,7 +69,7 @@ export default function About({ selectedIndex = 1, onNavigate = () => {} }: Abou
         </Box>
 
         <Box marginTop={1} marginBottom={1}>
-          <RuleTitle index="05" title="highlights" />
+          <RuleTitle index="04" title="highlights" />
         </Box>
         <Box marginLeft={2} flexDirection="column">
           {profile.highlights.map((highlight) => (
