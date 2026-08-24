@@ -14,7 +14,6 @@ const commands: Record<string, View> = {
   about: "about",
   experience: "experience",
   projects: "project-list",
-  contact: "contact",
 };
 
 function showHelp() {
@@ -28,12 +27,10 @@ Sections:
   npx prithvi about        Open about section
   npx prithvi experience   Open experience section
   npx prithvi projects     Browse projects
-  npx prithvi contact      Open contact section
 
 Links:
   npx prithvi github       Open GitHub
   npx prithvi linkedin     Open LinkedIn
-  npx prithvi website      Open portfolio website
 
 Options:
   -h, --help               Show this help
@@ -64,11 +61,6 @@ if (command === "github") {
 
 if (command === "linkedin") {
   openUrl(contact.linkedin);
-  process.exit(0);
-}
-
-if (command === "website") {
-  openUrl(contact.website);
   process.exit(0);
 }
 
