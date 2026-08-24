@@ -56,24 +56,31 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     let phraseIndex = 0;
     let characterIndex = 0;
     let deleting = false;
-    setHeaderMotto(phrases[0]);
+    let pauseUntil = Date.now() + 900;
+    setHeaderMotto("");
 
     const interval = setInterval(() => {
+      if (Date.now() < pauseUntil) return;
+
       const phrase = phrases[phraseIndex];
 
       if (!deleting) {
         characterIndex += 1;
         setHeaderMotto(phrase.slice(0, characterIndex));
-        if (characterIndex === phrase.length) deleting = true;
+        if (characterIndex === phrase.length) {
+          deleting = true;
+          pauseUntil = Date.now() + 1400;
+        }
       } else {
         characterIndex -= 1;
         setHeaderMotto(phrase.slice(0, characterIndex));
         if (characterIndex === 0) {
           deleting = false;
           phraseIndex = (phraseIndex + 1) % phrases.length;
+          pauseUntil = Date.now() + 350;
         }
       }
-    }, 100);
+    }, 170);
 
     return () => clearInterval(interval);
   }, []);
@@ -145,7 +152,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
             <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
               <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-              <Text bold wrap="truncate">{headerMotto}</Text>
+              <Box height={1} width="100%"><Text bold wrap="truncate">{headerMotto || "\u00a0"}</Text></Box>
               <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
               <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
             </Box>
