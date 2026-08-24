@@ -15,23 +15,12 @@ import { projects } from "../data/projects.js";
 import { contact } from "../data/contact.js";
 import { theme } from "../theme.js";
 
-interface HomeProps {
-  selectedIndex: number;
-  onNavigate: (page: string, index: number) => void;
-}
+interface HomeProps { selectedIndex: number; onNavigate: (page: string, index: number) => void; }
 interface SectionPosition { top: number; height: number; }
 
 const SCROLL_STEP = 2;
 const MOUSE_SCROLL_STEP = 3;
-const SECTION_IDS = [
-  "section-about",
-  "section-experience",
-  "section-projects",
-  "section-stack",
-  "section-highlights",
-  "section-connect",
-];
-
+const SECTION_IDS = ["section-about", "section-experience", "section-projects", "section-stack", "section-highlights", "section-connect"];
 const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "default", verticalLayout: "default" });
 
 export default function Home({ selectedIndex, onNavigate }: HomeProps) {
@@ -100,11 +89,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             const position = headerPositions.current[id];
             if (!position) continue;
             const top = currentViewportTop - currentOffset + position.top;
-            if (mouseY >= top && mouseY < top + position.height && mouseX >= 0) {
-              focus(id);
-              toggleSection(id);
-              break;
-            }
+            if (mouseY >= top && mouseY < top + position.height && mouseX >= 0) { focus(id); toggleSection(id); break; }
           }
         }
       }
@@ -129,11 +114,11 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" justifyContent="space-between" alignItems="flex-start">
-            <Box width="78%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
-            <Box width="21%" flexDirection="column" paddingTop={0}>
+            <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
+            <Box width="25%" flexDirection="column" paddingTop={0} flexShrink={0}>
               <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-              <Text bold wrap="wrap">{profile.headerMotto}</Text>
-              <Text bold dimColor>⌂ {profile.location}</Text>
+              <Text bold wrap="truncate">{profile.headerMotto}</Text>
+              <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
               <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
             </Box>
           </Box>
@@ -143,28 +128,10 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
           <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
           <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
           <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}>
-            <Box marginTop={1} flexDirection="column">
-              <Box flexDirection="row" gap={2}>
-                <TerminalLink url={contact.github}>[ github ]</TerminalLink>
-                <TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink>
-                <TerminalLink url={contact.email}>[ email ]</TerminalLink>
-              </Box>
-              <Box marginTop={1}>
-                <Text dimColor>click to open in your browser</Text>
-              </Box>
-            </Box>
+            <Box marginTop={1} flexDirection="column"><Box flexDirection="row" gap={2}><TerminalLink url={contact.github}>[ github ]</TerminalLink><TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink><TerminalLink url={contact.email}>[ email ]</TerminalLink></Box><Box marginTop={1}><Text dimColor>click to open in your browser</Text></Box></Box>
           </CollapsibleSection>
-
-          <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column">
-            <Text dimColor>“I was not born with a whole lot of natural talent... but I</Text>
-            <Text dimColor>work hard and I never give up.”</Text>
-            <Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box>
-          </Box>
-
-          <Box marginTop={2} flexDirection="column" alignItems="center">
-            <Text dimColor>© {new Date().getFullYear()} @prithvikings</Text>
-            <Text dimColor>Built with love, LLMs and patience.</Text>
-          </Box>
+          <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column"><Text dimColor>“I was not born with a whole lot of natural talent... but I</Text><Text dimColor>work hard and I never give up.”</Text><Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box></Box>
+          <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
         </Box></ScrollViewport>
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
