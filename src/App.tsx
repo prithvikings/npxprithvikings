@@ -90,10 +90,26 @@ export default function App({
       );
     }
 
-    if (view === "about" || view === "experience" || view === "contact") {
+    if (view === "about" || view === "experience") {
+      return (
+        <PageRenderer
+          page={view}
+          selectedIndex={selectedIndex}
+          selectedContactIndex={selectedContactIndex}
+          onNavigate={handleNavigation}
+        />
+      );
+    }
+
+    if (view === "contact") {
       return (
         <TerminalLayout footer="ESC Back • Q Quit">
-          <PageRenderer page={view} selectedContactIndex={selectedContactIndex} />
+          <PageRenderer
+            page={view}
+            selectedIndex={selectedIndex}
+            selectedContactIndex={selectedContactIndex}
+            onNavigate={handleNavigation}
+          />
         </TerminalLayout>
       );
     }
