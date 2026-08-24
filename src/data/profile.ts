@@ -6,7 +6,7 @@ export const profile = {
   headerMotto: "Trying to do better",
   tagline:
     "I build scalable web applications, developer tools, and AI-powered products.",
-  location: "Jalandhar, Punjab, India",
+  location: "Jalandhar, India",
   website: "https://prithvikings.me/",
 
   summary:
