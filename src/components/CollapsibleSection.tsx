@@ -61,7 +61,6 @@ export default function CollapsibleSection({
     <Box ref={sectionRef} flexDirection="column" marginTop={compact ? 0 : 1}>
       <Box
         ref={headerRef}
-        width="100%"
         height={1}
         flexDirection="row"
         alignItems="center"
@@ -80,9 +79,7 @@ export default function CollapsibleSection({
         <Text bold={isFocused || !collapsed} color={isFocused ? theme.primary : undefined}>
           {title}
         </Text>
-        <Box flexGrow={1} marginLeft={1} minWidth={1} overflow="hidden">
-          <Text>─</Text>
-        </Box>
+        <Text> ─────</Text>
       </Box>
       {!collapsed && <Box flexDirection="column">{children}</Box>}
     </Box>
