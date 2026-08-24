@@ -25,11 +25,6 @@ export default function ScrollViewport({
     ? Math.round((safeOffset / maxOffset) * (height - thumbHeight))
     : 0;
 
-  const scrollbar = Array.from({ length: height }, (_, index) => {
-    const isThumb = hasOverflow && index >= thumbTop && index < thumbTop + thumbHeight;
-    return isThumb ? "┃ " : "│ ";
-  }).join("\n");
-
   return (
     <Box width="100%" height={height} flexDirection="row" flexShrink={0}>
       <Box
@@ -51,10 +46,15 @@ export default function ScrollViewport({
         </Box>
       </Box>
 
-      <Box width={2} height={height} flexShrink={0}>
-        <Text color={hasOverflow ? theme.muted : undefined} dimColor={!hasOverflow}>
-          {scrollbar}
-        </Text>
+      <Box width={2} height={height} flexShrink={0} flexDirection="column">
+        {Array.from({ length: height }, (_, index) => {
+          const isThumb = hasOverflow && index >= thumbTop && index < thumbTop + thumbHeight;
+          return (
+            <Text key={index} color={isThumb ? "white" : theme.muted} dimColor={!isThumb}>
+              {isThumb ? "┃ " : "│ "}
+            </Text>
+          );
+        })}
       </Box>
     </Box>
   );
