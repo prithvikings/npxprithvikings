@@ -58,11 +58,6 @@ export default function CollapsibleSection({
   );
 
   const indexLabel = `${String(index + 1).padStart(2, "0")}  `;
-  const terminalWidth = process.stdout.columns ?? 118;
-  const contentWidth = Math.min(Math.max(70, terminalWidth - 24), 100);
-  const headerWidth = Math.max(1, contentWidth - 2); // TerminalLayout paddingX={1}
-  const fixedHeaderWidth = (showIndex ? indexLabel.length : 0) + 2 + title.length + 1;
-  const dividerLength = Math.max(1, headerWidth - fixedHeaderWidth);
 
   return (
     <Box ref={sectionRef} flexDirection="column" marginTop={compact ? 0 : 1}>
@@ -92,7 +87,7 @@ export default function CollapsibleSection({
           </Text>
         </Box>
         <Box flexGrow={1} flexShrink={1} minWidth={1} marginLeft={1} overflow="hidden">
-          <Text>{"─".repeat(dividerLength)}</Text>
+          <Text wrap="truncate">{"─".repeat(200)}</Text>
         </Box>
       </Box>
       {!collapsed && <Box flexDirection="column">{children}</Box>}
