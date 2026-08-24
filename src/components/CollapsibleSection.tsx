@@ -92,7 +92,7 @@ export default function CollapsibleSection({
           </Text>
         </Box>
         <Box flexGrow={1} flexShrink={1} minWidth={1} marginLeft={1} overflow="hidden">
-          <Text>{"─".repeat(dividerLength)}</Text>
+          <Text wrap="truncate">{"─".repeat(dividerLength)}</Text>
         </Box>
       </Box>
       {!collapsed && <Box flexDirection="column">{children}</Box>}
