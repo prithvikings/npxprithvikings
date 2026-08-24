@@ -13,7 +13,10 @@ import { experience } from "../data/experience.js";
 import { projects } from "../data/projects.js";
 import { theme } from "../theme.js";
 
-interface HomeProps { selectedIndex: number; }
+interface HomeProps {
+  selectedIndex: number;
+  onNavigate: (page: string, index: number) => void;
+}
 interface SectionPosition { top: number; height: number; }
 
 const SCROLL_STEP = 2;
@@ -22,7 +25,7 @@ const SECTION_IDS = ["section-about", "section-experience", "section-projects", 
 
 const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "default", verticalLayout: "default" });
 
-export default function Home({ selectedIndex }: HomeProps) {
+export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { rows } = useTerminalSize();
   const { focus } = useFocusManager();
   const { stdin } = useStdin();
@@ -103,8 +106,8 @@ export default function Home({ selectedIndex }: HomeProps) {
   const progress = maxScrollOffset === 0 ? 0 : Math.round((scrollOffset / maxScrollOffset) * 100);
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
-      <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box><Box flexDirection="row" gap={1} flexShrink={1}><Navigation selectedIndex={selectedIndex} activePage="home" /><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text>◐</Text></Box></Box></Box>
-      <Text dimColor>────────────────────────────────────────────────────────────────────────────────────────────────</Text>
+      <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box><Box flexDirection="row" gap={1} flexShrink={1}><Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} /><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text>◐</Text></Box></Box></Box>
+      <Text dimColor>{"─".repeat(96)}</Text>
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
           <Box width="100%" alignItems="flex-start"><Text bold color={theme.primary}>{nameArt}</Text></Box>
