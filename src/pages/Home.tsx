@@ -132,7 +132,9 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
                 <TerminalLink url={contact.github}>[ github ]</TerminalLink>
                 <TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink>
               </Box>
-              <Text dimColor marginTop={1}>Email contact is not currently present in the repository data.</Text>
+              <Box marginTop={1}>
+                <Text dimColor>Email contact is not currently present in the repository data.</Text>
+              </Box>
             </Box>
           </CollapsibleSection>
         </Box></ScrollViewport>
