@@ -6,11 +6,12 @@ import ScrollViewport from "../components/ScrollViewport.js";
 import StatusBar from "../components/StatusBar.js";
 import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { projects } from "../data/projects.js";
+import { theme } from "../theme.js";
 
 const MOUSE_SCROLL_STEP = 3;
 
 interface ProjectsProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, index: number) => void;
   selectedIndex: number;
 }
 
@@ -20,7 +21,6 @@ export default function Projects({ onNavigate, selectedIndex }: ProjectsProps) {
   const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
-  const viewportRef = useRef<any>(null);
   const contentRef = useRef<any>(null);
   const scrollOffsetRef = useRef(0);
   const maxScrollOffsetRef = useRef(0);
@@ -34,14 +34,9 @@ export default function Projects({ onNavigate, selectedIndex }: ProjectsProps) {
   }, [scrollOffset, maxScrollOffset]);
 
   useLayoutEffect(() => {
-    const viewportLayout = viewportRef.current?.yogaNode?.getComputedLayout();
     const contentLayout = contentRef.current?.yogaNode?.getComputedLayout();
     if (contentLayout && contentLayout.height !== contentHeight) {
       setContentHeight(contentLayout.height);
-    }
-    if (viewportLayout && viewportLayout.height !== viewportHeight) {
-      // The terminal-size hook owns the viewport height; this keeps the ref measured
-      // without introducing another layout state that can fight the scroll position.
     }
   });
 
@@ -118,14 +113,25 @@ export default function Projects({ onNavigate, selectedIndex }: ProjectsProps) {
         flexDirection="column"
         paddingX={1}
       >
-        <Navigation
-          selectedIndex={selectedIndex}
-          activePage="projects"
-          onSelect={onNavigate}
-        />
+        <Box width="100%" justifyContent="space-between" alignItems="center">
+          <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
+            <Text bold>PR</Text>
+          </Box>
+          <Box flexDirection="row" gap={1} flexShrink={1}>
+            <Navigation
+              selectedIndex={selectedIndex}
+              activePage="projects"
+              onSelect={onNavigate}
+            />
+            <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
+              <Text>◐</Text>
+            </Box>
+          </Box>
+        </Box>
+
         <Text dimColor>{"─".repeat(96)}</Text>
 
-        <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
+        <Box width="100%" height={viewportHeight} flexShrink={0}>
           <ScrollViewport
             height={viewportHeight}
             offset={scrollOffset}
@@ -135,7 +141,7 @@ export default function Projects({ onNavigate, selectedIndex }: ProjectsProps) {
               {projects.map((project, index) => (
                 <Box key={project.id} flexDirection="column" marginBottom={1}>
                   <Box width="100%" flexDirection="row" alignItems="center">
-                    <Text bold color={index === selectedIndex ? undefined : undefined}>
+                    <Text bold>
                       {String(index + 1).padStart(2, "0")}  {project.name}
                     </Text>
                     <Box flexGrow={1} marginLeft={1}>
@@ -149,8 +155,8 @@ export default function Projects({ onNavigate, selectedIndex }: ProjectsProps) {
                     <Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text>
                     <Text> </Text>
                     <Box flexDirection="row" gap={2}>
-                      {project.links.demo && <Text dimColor>[ live ↗ ]</Text>}
-                      {project.links.github && <Text dimColor>[ code ↗ ]</Text>}
+                      {project.links.demo && <Text>[ live ↗ ]</Text>}
+                      {project.links.github && <Text>[ code ↗ ]</Text>}
                     </Box>
                   </Box>
                 </Box>
