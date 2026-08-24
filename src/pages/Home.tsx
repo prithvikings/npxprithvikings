@@ -128,8 +128,15 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       <Text dimColor>{"─".repeat(96)}</Text>
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
-          <Box width="100%" alignItems="flex-start"><Text bold color={theme.primary}>{nameArt}</Text></Box>
-          <Box width="100%" justifyContent="space-between" marginTop={0}><Box flexDirection="column" width="70%"><Text bold>{profile.title}</Text><Text dimColor wrap="wrap">{profile.tagline}</Text></Box><Box flexDirection="column" width="26%"><Text color={theme.primary}>● AVAILABLE</Text><Text wrap="wrap">{profile.location}</Text></Box></Box>
+          <Box width="100%" justifyContent="space-between" alignItems="flex-start">
+            <Box width="67%"><Text color={theme.text}>{nameArt}</Text></Box>
+            <Box width="30%" flexDirection="column" paddingTop={1}>
+              <Text><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
+              <Text wrap="wrap">{profile.headerMotto}</Text>
+              <Text dimColor>⌂ {profile.location}</Text>
+              <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
+            </Box>
+          </Box>
           <CollapsibleSection id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
           <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
           <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
