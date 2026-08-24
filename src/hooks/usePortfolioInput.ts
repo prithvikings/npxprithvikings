@@ -1,6 +1,7 @@
 import { useInput } from "ink";
 
 import { navigationItems } from "../data/navigation.js";
+import { projects } from "../data/projects.js";
 
 export type View =
   | "welcome"
