@@ -9,6 +9,8 @@ import { theme } from "../theme.js";
 
 const MOUSE_SCROLL_STEP = 3;
 const KEY_SCROLL_STEP = 1;
+const REVEAL_DURATION = 1500;
+const REVEAL_TICK = 33;
 
 interface ScrollPageLayoutProps {
   activePage: string;
@@ -28,6 +30,7 @@ export default function ScrollPageLayout({
   const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
+  const [revealProgress, setRevealProgress] = useState(0);
   const contentRef = useRef<DOMElement | null>(null);
   const maxScrollOffsetRef = useRef(0);
 
@@ -44,6 +47,26 @@ export default function ScrollPageLayout({
       setContentHeight(contentLayout.height);
     }
   });
+
+  useEffect(() => {
+    const startedAt = Date.now();
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    setRevealProgress(0);
+
+    const tick = () => {
+      const progress = Math.min(1, (Date.now() - startedAt) / REVEAL_DURATION);
+      setRevealProgress(progress);
+      if (progress >= 1 && timer) clearInterval(timer);
+    };
+
+    timer = setInterval(tick, REVEAL_TICK);
+    tick();
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [activePage]);
 
   useEffect(() => {
     setScrollOffset((current) => Math.min(current, maxScrollOffset));
@@ -122,6 +145,10 @@ export default function ScrollPageLayout({
   const progress = maxScrollOffset === 0
     ? 0
     : Math.round((Math.min(scrollOffset, maxScrollOffset) / maxScrollOffset) * 100);
+  const revealMaskHeight = Math.max(
+    0,
+    Math.round(viewportHeight * Math.pow(1 - revealProgress, 3)),
+  );
 
   return (
     <Box width="100%" flexDirection="column" alignItems="center">
@@ -149,7 +176,7 @@ export default function ScrollPageLayout({
 
         <Text dimColor>{"─".repeat(96)}</Text>
 
-        <Box width="100%" height={viewportHeight} flexShrink={0}>
+        <Box width="100%" height={viewportHeight} flexShrink={0} position="relative">
           <ScrollViewport
             height={viewportHeight}
             offset={scrollOffset}
@@ -159,6 +186,14 @@ export default function ScrollPageLayout({
               {children}
             </Box>
           </ScrollViewport>
+          {revealMaskHeight > 0 && (
+            <Box
+              position="absolute"
+              width="100%"
+              height={revealMaskHeight}
+              backgroundColor="black"
+            />
+          )}
         </Box>
 
         <StatusBar progress={progress} maxOffset={maxScrollOffset} />
