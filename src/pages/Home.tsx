@@ -22,21 +22,7 @@ const SCROLL_STEP = 2;
 const MOUSE_SCROLL_STEP = 3;
 const SECTION_IDS = ["section-about", "section-experience", "section-projects", "section-stack", "section-highlights", "section-connect"];
 const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "full", verticalLayout: "default" });
-
-// Each stage is intentionally short enough to feel alive without making the page
-// wait too long before becoming usable.
-const ANIMATION_STAGES = [
-  { stage: 1, delay: 180 }, // logo
-  { stage: 2, delay: 220 }, // profile block
-  { stage: 3, delay: 260 }, // about
-  { stage: 4, delay: 240 }, // experience
-  { stage: 5, delay: 240 }, // projects
-  { stage: 6, delay: 220 }, // stack
-  { stage: 7, delay: 220 }, // highlights
-  { stage: 8, delay: 220 }, // connect
-  { stage: 9, delay: 260 }, // quote
-  { stage: 10, delay: 220 }, // footer
-];
+const REVEAL_DURATION = 1500;
 
 export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { rows } = useTerminalSize();
@@ -45,10 +31,10 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
+  const [revealHeight, setRevealHeight] = useState(0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [viewportTop, setViewportTop] = useState(0);
   const [headerMotto, setHeaderMotto] = useState("");
-  const [animationStage, setAnimationStage] = useState(0);
   const sectionPositions = useRef<Record<string, SectionPosition>>({});
   const headerPositions = useRef<Record<string, SectionPosition>>({});
   const viewportRef = useRef<DOMElement | null>(null);
@@ -63,30 +49,38 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const viewportHeight = Math.max(8, rows - 7);
   const maxScrollOffset = Math.max(0, contentHeight - viewportHeight);
 
-  // Stagger the page in from top to bottom. Nothing is changed after the
-  // sequence finishes, so scrolling/collapsing remains completely normal.
-  useEffect(() => {
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    const revealNext = (index: number) => {
-      if (cancelled || index >= ANIMATION_STAGES.length) return;
-      timer = setTimeout(() => {
-        if (cancelled) return;
-        setAnimationStage(ANIMATION_STAGES[index].stage);
-        revealNext(index + 1);
-      }, ANIMATION_STAGES[index].delay);
-    };
-
-    revealNext(0);
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, []);
-
   useEffect(() => { scrollOffsetRef.current = scrollOffset; maxScrollOffsetRef.current = maxScrollOffset; viewportTopRef.current = viewportTop; viewportHeightRef.current = viewportHeight; }, [scrollOffset, maxScrollOffset, viewportTop, viewportHeight]);
-  useLayoutEffect(() => { const viewportLayout = viewportRef.current?.yogaNode?.getComputedLayout(); const contentLayout = contentRef.current?.yogaNode?.getComputedLayout(); if (viewportLayout && viewportLayout.top !== viewportTop) setViewportTop(viewportLayout.top); if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height); });
+
+  useLayoutEffect(() => {
+    const viewportLayout = viewportRef.current?.yogaNode?.getComputedLayout();
+    const contentLayout = contentRef.current?.yogaNode?.getComputedLayout();
+    if (viewportLayout && viewportLayout.top !== viewportTop) setViewportTop(viewportLayout.top);
+    if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height);
+  });
+
+  // Reveal the entire page through a single top-to-bottom mask. Unlike
+  // per-section timers, this keeps the content moving as one continuous swipe.
+  useEffect(() => {
+    if (contentHeight <= 0) return;
+
+    let frame = 0;
+    const startedAt = Date.now();
+    setRevealHeight(0);
+
+    const tick = () => {
+      const progress = Math.min(1, (Date.now() - startedAt) / REVEAL_DURATION);
+      // Ease-out cubic: fast enough at the start, then gently settles at the bottom.
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setRevealHeight(Math.max(1, Math.round(contentHeight * eased)));
+
+      if (progress < 1) frame = requestAnimationFrame(tick);
+      else setRevealHeight(contentHeight);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [contentHeight]);
+
   useEffect(() => { setScrollOffset((current) => Math.min(current, maxScrollOffset)); }, [maxScrollOffset]);
 
   useEffect(() => {
@@ -99,9 +93,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
 
     const interval = setInterval(() => {
       if (Date.now() < pauseUntil) return;
-
       const phrase = phrases[phraseIndex];
-
       if (!deleting) {
         characterIndex += 1;
         setHeaderMotto(phrase.slice(0, characterIndex));
@@ -155,7 +147,8 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       const sgrPattern = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g; let match: RegExpExecArray | null;
       while ((match = sgrPattern.exec(data)) !== null) {
         consumedUntil = sgrPattern.lastIndex; const button = Number(match[1]); const mouseX = Number(match[2]) - 1; const mouseY = Number(match[3]) - 1;
-        if (button === 64) { applyMouseScroll("up"); continue; } if (button === 65) { applyMouseScroll("down"); continue; }
+        if (button === 64) { applyMouseScroll("up"); continue; }
+        if (button === 65) { applyMouseScroll("down"); continue; }
         if (button === 0 && match[4] === "M") {
           const currentViewportTop = viewportTopRef.current; const currentOffset = scrollOffsetRef.current;
           for (const id of SECTION_IDS) {
@@ -176,51 +169,42 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   useInput((input, key) => {
     if (key.downArrow || key.pageDown || input === "j") { setScrollOffset((current) => Math.min(maxScrollOffset, current + (key.pageDown ? 10 : SCROLL_STEP))); return; }
     if (key.upArrow || key.pageUp || input === "k") { setScrollOffset((current) => Math.max(0, current - (key.pageUp ? 10 : SCROLL_STEP))); return; }
-    if (key.home) { setScrollOffset(0); return; } if (key.end) setScrollOffset(maxScrollOffset);
+    if (key.home) { setScrollOffset(0); return; }
+    if (key.end) setScrollOffset(maxScrollOffset);
   });
 
   const progress = maxScrollOffset === 0 ? 0 : Math.round((scrollOffset / maxScrollOffset) * 100);
-  const showLogo = animationStage >= 1;
-  const showProfile = animationStage >= 2;
-  const showAbout = animationStage >= 3;
-  const showExperience = animationStage >= 4;
-  const showProjects = animationStage >= 5;
-  const showStack = animationStage >= 6;
-  const showHighlights = animationStage >= 7;
-  const showConnect = animationStage >= 8;
-  const showQuote = animationStage >= 9;
-  const showFooter = animationStage >= 10;
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
       <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box><Box flexDirection="row" gap={1} flexShrink={1}><Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} /><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text>◐</Text></Box></Box></Box>
       <Text dimColor>{"─".repeat(96)}</Text>
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
-        <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}><Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1}>
-          <Box width="100%" justifyContent="space-between" alignItems="center">
-            <Box width="74%" flexShrink={0}>
-              {showLogo ? <Text color={theme.primary}>{nameArt}</Text> : <Text> </Text>}
-            </Box>
-            <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
-              {showProfile ? <>
-                <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-                <Box height={1} width="100%"><Text bold wrap="truncate">{headerMotto || "\u00a0"}</Text></Box>
-                <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
-                <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
-              </> : <Box height={4}><Text> </Text></Box>}
+        <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}>
+          <Box width="100%" height={revealHeight} overflow="hidden" flexDirection="column" flexShrink={0}>
+            <Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1} flexShrink={0}>
+              <Box width="100%" justifyContent="space-between" alignItems="center">
+                <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
+                <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
+                  <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
+                  <Box height={1} width="100%"><Text bold wrap="truncate">{headerMotto || "\u00a0"}</Text></Box>
+                  <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
+                  <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
+                </Box>
+              </Box>
+
+              <CollapsibleSection compact id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
+              <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+              <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
+              <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
+              <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+              <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box flexDirection="row" gap={2}><TerminalLink url={contact.github}>[ github ]</TerminalLink><TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink><TerminalLink url={contact.email}>[ email ]</TerminalLink></Box><Box marginTop={1}><Text dimColor>click to open in your browser</Text></Box></Box></CollapsibleSection>
+
+              <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column"><Text dimColor>“I was not born with a whole lot of natural talent... but I</Text><Text dimColor>work hard and I never give up.”</Text><Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box></Box>
+              <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
             </Box>
           </Box>
-
-          {showAbout && <CollapsibleSection compact id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>}
-          {showExperience && <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>}
-          {showProjects && <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>}
-          {showStack && <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>}
-          {showHighlights && <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>}
-          {showConnect && <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box flexDirection="row" gap={2}><TerminalLink url={contact.github}>[ github ]</TerminalLink><TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink><TerminalLink url={contact.email}>[ email ]</TerminalLink></Box><Box marginTop={1}><Text dimColor>click to open in your browser</Text></Box></Box></CollapsibleSection>}
-
-          {showQuote && <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column"><Text dimColor>“I was not born with a whole lot of natural talent... but I</Text><Text dimColor>work hard and I never give up.”</Text><Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box></Box>}
-          {showFooter && <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>}
-        </Box></ScrollViewport>
+        </ScrollViewport>
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
