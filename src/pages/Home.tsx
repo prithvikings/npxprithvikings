@@ -198,7 +198,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
           </Box>
         </ScrollViewport>
-        {revealMaskHeight > 0 && <Box position="absolute" top={0} width="100%" height={revealMaskHeight} backgroundColor="black" />}
+        {revealMaskHeight > 0 && <Box position="absolute" width="100%" height={revealMaskHeight} backgroundColor="black" />}
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
