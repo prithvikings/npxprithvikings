@@ -59,10 +59,6 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height);
   });
 
-  // Reveal using a fixed terminal viewport mask. The content remains at its
-  // natural height, so there is no circular dependency between measuring and
-  // animating its height. The mask shrinks from the top downward, producing
-  // one continuous top-to-bottom swipe.
   useEffect(() => {
     const startedAt = Date.now();
     let timer: ReturnType<typeof setInterval> | undefined;
@@ -173,6 +169,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
 
   const progress = maxScrollOffset === 0 ? 0 : Math.round((scrollOffset / maxScrollOffset) * 100);
   const revealMaskHeight = Math.max(0, Math.round(viewportHeight * Math.pow(1 - revealProgress, 3)));
+  const revealMaskOffset = Math.round(viewportHeight * (1 - revealProgress));
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -202,7 +199,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
           </Box>
         </ScrollViewport>
-        {revealMaskHeight > 0 && <Box position="absolute" width="100%" height={revealMaskHeight} backgroundColor="black" />}
+        {revealMaskHeight > 0 && <Box position="absolute" marginTop={revealMaskOffset} width="100%" height={revealMaskHeight} backgroundColor="black" />}
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
