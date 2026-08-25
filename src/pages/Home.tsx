@@ -1,4 +1,4 @@
-import { Box, Text, type DOMElement, useAnimation, useFocusManager, useInput, useStdin, useStdout } from "ink";
+import { Box, Text, type DOMElement, useFocusManager, useInput, useStdin, useStdout } from "ink";
 import figlet from "figlet";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -23,6 +23,7 @@ const MOUSE_SCROLL_STEP = 3;
 const SECTION_IDS = ["section-about", "section-experience", "section-projects", "section-stack", "section-highlights", "section-connect"];
 const nameArt = figlet.textSync("PRITHVI", { font: "ANSI Shadow", horizontalLayout: "full", verticalLayout: "default" });
 const REVEAL_DURATION = 1500;
+const REVEAL_TICK = 33;
 
 export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { rows } = useTerminalSize();
@@ -31,7 +32,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
-  const [isRevealing, setIsRevealing] = useState(true);
+  const [revealProgress, setRevealProgress] = useState(0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [viewportTop, setViewportTop] = useState(0);
   const [headerMotto, setHeaderMotto] = useState("");
@@ -48,7 +49,6 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
   const maxScrollOffset = Math.max(0, contentHeight - viewportHeight);
-  const { time: revealTime } = useAnimation({ interval: 33, isActive: isRevealing });
 
   useEffect(() => { scrollOffsetRef.current = scrollOffset; maxScrollOffsetRef.current = maxScrollOffset; viewportTopRef.current = viewportTop; viewportHeightRef.current = viewportHeight; }, [scrollOffset, maxScrollOffset, viewportTop, viewportHeight]);
 
@@ -59,15 +59,25 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height);
   });
 
-  // Use Ink's animation clock instead of requestAnimationFrame. Ink owns the
-  // terminal render loop, so this keeps the reveal synchronized with redraws.
-  const revealProgress = Math.min(1, revealTime / REVEAL_DURATION);
-  const revealEased = 1 - Math.pow(1 - revealProgress, 3);
-  const revealMaskHeight = Math.max(0, Math.round(viewportHeight * (1 - revealEased)));
-
+  // Reveal using a fixed terminal viewport mask. The content remains at its
+  // natural height, so there is no circular dependency between measuring and
+  // animating its height. The mask shrinks from the top downward, producing
+  // one continuous top-to-bottom swipe.
   useEffect(() => {
-    if (isRevealing && revealTime >= REVEAL_DURATION) setIsRevealing(false);
-  }, [isRevealing, revealTime]);
+    const startedAt = Date.now();
+    let timer: ReturnType<typeof setInterval> | undefined;
+    setRevealProgress(0);
+
+    const tick = () => {
+      const progress = Math.min(1, (Date.now() - startedAt) / REVEAL_DURATION);
+      setRevealProgress(progress);
+      if (progress >= 1 && timer) clearInterval(timer);
+    };
+
+    timer = setInterval(tick, REVEAL_TICK);
+    tick();
+    return () => { if (timer) clearInterval(timer); };
+  }, []);
 
   useEffect(() => { setScrollOffset((current) => Math.min(current, maxScrollOffset)); }, [maxScrollOffset]);
 
@@ -162,6 +172,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   });
 
   const progress = maxScrollOffset === 0 ? 0 : Math.round((scrollOffset / maxScrollOffset) * 100);
+  const revealMaskHeight = Math.max(0, Math.round(viewportHeight * Math.pow(1 - revealProgress, 3)));
 
   return (
     <Box width="100%" flexDirection="column" flexShrink={0}>
@@ -191,9 +202,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
           </Box>
         </ScrollViewport>
-        {isRevealing && revealMaskHeight > 0 && (
-          <Box position="absolute" bottom={0} left={0} width="100%" height={revealMaskHeight} backgroundColor="black" />
-        )}
+        {revealMaskHeight > 0 && <Box position="absolute" top={0} left={0} width="100%" height={revealMaskHeight} backgroundColor="black" />}
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
