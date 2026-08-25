@@ -1,4 +1,4 @@
-import { Box, Text, type DOMElement, useFocusManager, useInput, useStdin, useStdout } from "ink";
+import { Box, Text, type DOMElement, useAnimation, useFocusManager, useInput, useStdin, useStdout } from "ink";
 import figlet from "figlet";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -31,7 +31,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
-  const [revealHeight, setRevealHeight] = useState(0);
+  const [isRevealing, setIsRevealing] = useState(true);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [viewportTop, setViewportTop] = useState(0);
   const [headerMotto, setHeaderMotto] = useState("");
@@ -48,6 +48,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 2);
   const viewportHeight = Math.max(8, rows - 7);
   const maxScrollOffset = Math.max(0, contentHeight - viewportHeight);
+  const { time: revealTime } = useAnimation({ interval: 33, isActive: isRevealing });
 
   useEffect(() => { scrollOffsetRef.current = scrollOffset; maxScrollOffsetRef.current = maxScrollOffset; viewportTopRef.current = viewportTop; viewportHeightRef.current = viewportHeight; }, [scrollOffset, maxScrollOffset, viewportTop, viewportHeight]);
 
@@ -58,28 +59,15 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     if (contentLayout && contentLayout.height !== contentHeight) setContentHeight(contentLayout.height);
   });
 
-  // Reveal the entire page through a single top-to-bottom mask. Unlike
-  // per-section timers, this keeps the content moving as one continuous swipe.
+  // Use Ink's animation clock instead of requestAnimationFrame. Ink owns the
+  // terminal render loop, so this keeps the reveal synchronized with redraws.
+  const revealProgress = Math.min(1, revealTime / REVEAL_DURATION);
+  const revealEased = 1 - Math.pow(1 - revealProgress, 3);
+  const revealMaskHeight = Math.max(0, Math.round(viewportHeight * (1 - revealEased)));
+
   useEffect(() => {
-    if (contentHeight <= 0) return;
-
-    let frame = 0;
-    const startedAt = Date.now();
-    setRevealHeight(0);
-
-    const tick = () => {
-      const progress = Math.min(1, (Date.now() - startedAt) / REVEAL_DURATION);
-      // Ease-out cubic: fast enough at the start, then gently settles at the bottom.
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setRevealHeight(Math.max(1, Math.round(contentHeight * eased)));
-
-      if (progress < 1) frame = requestAnimationFrame(tick);
-      else setRevealHeight(contentHeight);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [contentHeight]);
+    if (isRevealing && revealTime >= REVEAL_DURATION) setIsRevealing(false);
+  }, [isRevealing, revealTime]);
 
   useEffect(() => { setScrollOffset((current) => Math.min(current, maxScrollOffset)); }, [maxScrollOffset]);
 
@@ -179,32 +167,33 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     <Box width="100%" flexDirection="column" flexShrink={0}>
       <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box><Box flexDirection="row" gap={1} flexShrink={1}><Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} /><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text>◐</Text></Box></Box></Box>
       <Text dimColor>{"─".repeat(96)}</Text>
-      <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0}>
+      <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0} position="relative" overflow="hidden">
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}>
-          <Box width="100%" height={revealHeight} overflow="hidden" flexDirection="column" flexShrink={0}>
-            <Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1} flexShrink={0}>
-              <Box width="100%" justifyContent="space-between" alignItems="center">
-                <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
-                <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
-                  <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
-                  <Box height={1} width="100%"><Text bold wrap="truncate">{headerMotto || "\u00a0"}</Text></Box>
-                  <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
-                  <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
-                </Box>
+          <Box ref={contentRef} width="100%" flexDirection="column" paddingRight={1} flexShrink={0}>
+            <Box width="100%" justifyContent="space-between" alignItems="center">
+              <Box width="74%" flexShrink={0}><Text color={theme.primary}>{nameArt}</Text></Box>
+              <Box width="22%" flexDirection="column" paddingTop={0} flexShrink={0}>
+                <Text bold><Text color={theme.accent}>●</Text> {profile.age} · {profile.headerRole}</Text>
+                <Box height={1} width="100%"><Text bold wrap="truncate">{headerMotto || "\u00a0"}</Text></Box>
+                <Text bold dimColor wrap="truncate">⌂ {profile.location}</Text>
+                <TerminalLink url={profile.website}>[ prithvikings.me ↗ ]</TerminalLink>
               </Box>
-
-              <CollapsibleSection compact id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
-              <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
-              <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
-              <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
-              <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
-              <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box flexDirection="row" gap={2}><TerminalLink url={contact.github}>[ github ]</TerminalLink><TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink><TerminalLink url={contact.email}>[ email ]</TerminalLink></Box><Box marginTop={1}><Text dimColor>click to open in your browser</Text></Box></Box></CollapsibleSection>
-
-              <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column"><Text dimColor>“I was not born with a whole lot of natural talent... but I</Text><Text dimColor>work hard and I never give up.”</Text><Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box></Box>
-              <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
             </Box>
+
+            <CollapsibleSection compact id="section-about" index={0} title="about" collapsed={Boolean(collapsed["section-about"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.summary}</Text>{profile.about.map((paragraph) => <Box key={paragraph} marginTop={1}><Text dimColor wrap="wrap">{paragraph}</Text></Box>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box flexDirection="row" gap={2}><TerminalLink url={contact.github}>[ github ]</TerminalLink><TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink><TerminalLink url={contact.email}>[ email ]</TerminalLink></Box><Box marginTop={1}><Text dimColor>click to open in your browser</Text></Box></Box></CollapsibleSection>
+
+            <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column"><Text dimColor>“I was not born with a whole lot of natural talent... but I</Text><Text dimColor>work hard and I never give up.”</Text><Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box></Box>
+            <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
           </Box>
         </ScrollViewport>
+        {isRevealing && revealMaskHeight > 0 && (
+          <Box position="absolute" bottom={0} left={0} width="100%" height={revealMaskHeight} backgroundColor="black" />
+        )}
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
