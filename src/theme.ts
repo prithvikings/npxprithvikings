@@ -76,21 +76,27 @@ function interpolateColor(from: string, to: string, progress: number) {
   );
 }
 
-function setTerminalForeground(color: string) {
-  if (!process.stdout.isTTY) return;
+function foregroundEscape(color: string) {
   const { r, g, b } = hexToRgb(color);
-  process.stdout.write(`\x1b[38;2;${r};${g};${b}m`);
+  return `\x1b[38;2;${r};${g};${b}m`;
 }
+
+// Ink resets terminal styles while rendering. Prefix every terminal write with
+// the active foreground so unstyled <Text> remains readable in both themes.
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = ((chunk: string | Uint8Array, ...args: any[]) => {
+  if (chunk instanceof Uint8Array) {
+    const prefix = Buffer.from(foregroundEscape(theme.foreground));
+    return originalStdoutWrite(Buffer.concat([prefix, Buffer.from(chunk)]), ...args);
+  }
+
+  return originalStdoutWrite(foregroundEscape(theme.foreground) + chunk, ...args);
+}) as typeof process.stdout.write;
 
 function notify() {
   theme.version += 1;
   listeners.forEach((listener) => listener());
 }
-
-setTerminalForeground(theme.foreground);
-process.once("exit", () => {
-  if (process.stdout.isTTY) process.stdout.write("\x1b[39m");
-});
 
 export function toggleTheme() {
   const fromMode = theme.mode;
@@ -115,7 +121,6 @@ export function toggleTheme() {
     theme.background = interpolateColor(from.background, target.background, eased);
     theme.foreground = interpolateColor(from.foreground, target.foreground, eased);
 
-    setTerminalForeground(theme.foreground);
     notify();
 
     if (progress >= 1) {
@@ -126,7 +131,6 @@ export function toggleTheme() {
       theme.error = target.error;
       theme.background = target.background;
       theme.foreground = target.foreground;
-      setTerminalForeground(theme.foreground);
       notify();
       if (transitionTimer) clearInterval(transitionTimer);
       transitionTimer = undefined;
