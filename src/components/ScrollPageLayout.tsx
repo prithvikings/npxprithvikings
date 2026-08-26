@@ -158,6 +158,7 @@ export default function ScrollPageLayout({
       height={rows}
       flexDirection="column"
       alignItems="center"
+      backgroundColor={theme.background}
     >
       <Box
         width={Math.min(Math.max(70, (process.stdout.columns ?? 118) - 24), 100)}
