@@ -110,12 +110,12 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePosition = useCallback((id: string, position: SectionPosition) => {
-    sectionPositions.current[id] = position;
+  const handlePosition = useCallback((id: string, top: number, height: number) => {
+    sectionPositions.current[id] = { top, height };
   }, []);
 
-  const handleHeaderPosition = useCallback((id: string, position: SectionPosition) => {
-    headerPositions.current[id] = position;
+  const handleHeaderPosition = useCallback((id: string, top: number, height: number) => {
+    headerPositions.current[id] = { top, height };
   }, []);
 
   const handleFocus = useCallback((id: string) => {
