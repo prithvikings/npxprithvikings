@@ -10,6 +10,34 @@ export interface Experience {
 
 export const experience: Experience[] = [
   {
+    company: "GOLGIX",
+    role: "Full Stack Engineer Intern",
+    period: "Jun 2026 – Present",
+    location: "Remote",
+
+    description:
+      "Engineering production systems across AI-powered industrial analytics, developer tooling, backend services, and mobile applications.",
+
+    stack: [
+      "React",
+      "Next.js",
+      "Python",
+      "TypeScript",
+      "Node.js",
+      "Docker",
+      "GitHub Actions",
+      "React Native",
+    ],
+
+    highlights: [
+      "Shipped 68 PRs across 10+ production repositories in 3 months, covering features, CI/CD, infrastructure, and AI-powered industrial analytics.",
+      "Built an SLA scheduler, helpdesk email service, stale PR manager, and streaming AI chat UI.",
+      "Rolled out static analysis across 6 repositories and consolidated CI pipelines with GitHub Actions.",
+      "Owned mobile app improvements including code ownership, unread notification badges, onboarding flows, and production-ready App Store and Play Store assets.",
+      "Deployed data-sync services to production, provisioned Grafana alerts, and helped decommission legacy infrastructure.",
+    ],
+  },
+  {
     company: "FloriWish",
     role: "Full Stack Developer",
     period: "Jun 2025 – Mar 2026",
