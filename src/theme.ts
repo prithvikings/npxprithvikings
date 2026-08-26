@@ -2,7 +2,18 @@ import { useSyncExternalStore } from "react";
 
 export type ThemeMode = "dark" | "light";
 
-const palettes = {
+export interface ThemePalette {
+  primary: string;
+  secondary: string;
+  accent: string;
+  muted: string;
+  text: string;
+  error: string;
+  background: string;
+  foreground: string;
+}
+
+const palettes: Record<ThemeMode, ThemePalette> = {
   dark: {
     primary: "#F59E0B",
     secondary: "blue",
@@ -23,11 +34,16 @@ const palettes = {
     background: "#F5F5F0",
     foreground: "#111827",
   },
-} as const;
+};
 
-export const theme = {
+interface ThemeState extends ThemePalette {
+  mode: ThemeMode;
+  version: number;
+}
+
+export const theme: ThemeState = {
   ...palettes.dark,
-  mode: "dark" as ThemeMode,
+  mode: "dark",
   version: 0,
 };
 
