@@ -4,7 +4,7 @@
   "description": "Prithvi Raj's interactive terminal portfolio",
   "type": "module",
   "bin": {
-    "prithvi": "./dist/index.js"
+    "prithvi": "dist/index.js"
   },
   "files": [
     "dist"
