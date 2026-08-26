@@ -4,8 +4,9 @@ import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "re
 import Navigation from "./Navigation.js";
 import ScrollViewport from "./ScrollViewport.js";
 import StatusBar from "./StatusBar.js";
+import ThemeToggle from "./ThemeToggle.js";
 import { useTerminalSize } from "../hooks/useTerminalSize.js";
-import { theme } from "../theme.js";
+import { theme, useTheme } from "../theme.js";
 
 const MOUSE_SCROLL_STEP = 3;
 const KEY_SCROLL_STEP = 1;
@@ -26,6 +27,7 @@ export default function ScrollPageLayout({
   children,
 }: ScrollPageLayoutProps) {
   const { rows } = useTerminalSize();
+  useTheme();
   const { stdin } = useStdin();
   const { stdout } = useStdout();
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -151,7 +153,14 @@ export default function ScrollPageLayout({
   );
 
   return (
-    <Box width="100%" flexDirection="column" alignItems="center">
+    <Box
+      width="100%"
+      height={rows}
+      flexDirection="column"
+      alignItems="center"
+      backgroundColor={theme.background}
+      color={theme.foreground}
+    >
       <Box
         width={Math.min(Math.max(70, (process.stdout.columns ?? 118) - 24), 100)}
         flexDirection="column"
@@ -168,9 +177,7 @@ export default function ScrollPageLayout({
               activePage={activePage}
               onSelect={onNavigate}
             />
-            <Box borderStyle="round" borderColor={theme.muted} paddingX={1}>
-              <Text>◐</Text>
-            </Box>
+            <ThemeToggle />
           </Box>
         </Box>
 
@@ -191,7 +198,7 @@ export default function ScrollPageLayout({
               position="absolute"
               width="100%"
               height={revealMaskHeight}
-              backgroundColor="black"
+              backgroundColor={theme.background}
             />
           )}
         </Box>
