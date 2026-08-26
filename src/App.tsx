@@ -1,3 +1,4 @@
+import { Box } from "ink";
 import { useState } from "react";
 
 import TerminalLayout from "./components/TerminalLayout.js";
@@ -15,6 +16,7 @@ import {
 
 import { projects } from "./data/projects.js";
 import { navigationItems } from "./data/navigation.js";
+import { theme, useTheme } from "./theme.js";
 
 interface AppProps {
   initialView?: View;
@@ -31,6 +33,7 @@ export default function App({
   const [view, setView] = useState<View>(resolvedInitialView);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedProjectIndex, setSelectedProjectIndex] = useState(0);
+  useTheme();
 
   usePortfolioInput({
     view,
@@ -100,5 +103,14 @@ export default function App({
     return null;
   };
 
-  return renderContent();
+  return (
+    <Box
+      width="100%"
+      height={process.stdout.rows ?? 40}
+      backgroundColor={theme.background}
+      color={theme.foreground}
+    >
+      {renderContent()}
+    </Box>
+  );
 }
