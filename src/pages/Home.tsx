@@ -173,7 +173,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const revealMaskHeight = Math.max(0, Math.round(viewportHeight * Math.pow(1 - revealProgress, 3)));
 
   return (
-    <Box width="100%" height={rows} flexDirection="column" flexShrink={0} backgroundColor={theme.background} color={theme.foreground}>
+    <Box width="100%" height={rows} flexDirection="column" flexShrink={0} backgroundColor={theme.background}>
       <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}>
         <Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box>
         <Box flexDirection="row" gap={1} flexShrink={1}>
