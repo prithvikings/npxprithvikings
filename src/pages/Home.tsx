@@ -7,13 +7,14 @@ import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
 import StatusBar from "../components/StatusBar.js";
 import TerminalLink from "../components/TerminalLink.js";
+import ThemeToggle from "../components/ThemeToggle.js";
 import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
 import { experience } from "../data/experience.js";
 import { projects } from "../data/projects.js";
 import { contact } from "../data/contact.js";
-import { theme } from "../theme.js";
+import { theme, useTheme } from "../theme.js";
 
 interface HomeProps { selectedIndex: number; onNavigate: (page: string, index: number) => void; }
 interface SectionPosition { top: number; height: number; }
@@ -27,6 +28,7 @@ const REVEAL_TICK = 33;
 
 export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const { rows } = useTerminalSize();
+  useTheme();
   const { focus } = useFocusManager();
   const { stdin } = useStdin();
   const { stdout } = useStdout();
@@ -171,8 +173,14 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
   const revealMaskHeight = Math.max(0, Math.round(viewportHeight * Math.pow(1 - revealProgress, 3)));
 
   return (
-    <Box width="100%" flexDirection="column" flexShrink={0}>
-      <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box><Box flexDirection="row" gap={1} flexShrink={1}><Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} /><Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text>◐</Text></Box></Box></Box>
+    <Box width="100%" height={rows} flexDirection="column" flexShrink={0} backgroundColor={theme.background} color={theme.foreground}>
+      <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}>
+        <Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box>
+        <Box flexDirection="row" gap={1} flexShrink={1}>
+          <Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} />
+          <ThemeToggle />
+        </Box>
+      </Box>
       <Text dimColor>{"─".repeat(96)}</Text>
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0} position="relative" overflow="hidden">
         <ScrollViewport height={viewportHeight} offset={scrollOffset} maxOffset={maxScrollOffset}>
@@ -198,7 +206,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <Box marginTop={2} flexDirection="column" alignItems="center"><Text dimColor>© {new Date().getFullYear()} @prithvikings</Text><Text dimColor>Built with love, LLMs and patience.</Text></Box>
           </Box>
         </ScrollViewport>
-        {revealMaskHeight > 0 && <Box position="absolute" width="100%" height={revealMaskHeight} backgroundColor="black" />}
+        {revealMaskHeight > 0 && <Box position="absolute" width="100%" height={revealMaskHeight} backgroundColor={theme.background} />}
       </Box>
       <StatusBar progress={progress} maxOffset={maxScrollOffset} />
     </Box>
