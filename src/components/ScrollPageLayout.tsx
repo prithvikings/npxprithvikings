@@ -4,7 +4,6 @@ import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "re
 import Navigation from "./Navigation.js";
 import ScrollViewport from "./ScrollViewport.js";
 import StatusBar from "./StatusBar.js";
-import ThemeToggle from "./ThemeToggle.js";
 import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { theme, useTheme } from "../theme.js";
 
@@ -170,14 +169,11 @@ export default function ScrollPageLayout({
             <Text bold>PR</Text>
           </Box>
 
-          <Box flexDirection="row" gap={1} flexShrink={1}>
-            <Navigation
-              selectedIndex={selectedIndex}
-              activePage={activePage}
-              onSelect={onNavigate}
-            />
-            <ThemeToggle />
-          </Box>
+          <Navigation
+            selectedIndex={selectedIndex}
+            activePage={activePage}
+            onSelect={onNavigate}
+          />
         </Box>
 
         <Text dimColor>{"─".repeat(96)}</Text>
