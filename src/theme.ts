@@ -28,7 +28,7 @@ const palettes: Record<ThemeMode, ThemePalette> = {
     primary: "#D97706",
     secondary: "#2563EB",
     accent: "#15803D",
-    muted: "#6B7280",
+    muted: "#4B5563",
     text: "#111827",
     error: "#DC2626",
     background: "#F5F5F0",
@@ -76,10 +76,21 @@ function interpolateColor(from: string, to: string, progress: number) {
   );
 }
 
+function setTerminalForeground(color: string) {
+  if (!process.stdout.isTTY) return;
+  const { r, g, b } = hexToRgb(color);
+  process.stdout.write(`\x1b[38;2;${r};${g};${b}m`);
+}
+
 function notify() {
   theme.version += 1;
   listeners.forEach((listener) => listener());
 }
+
+setTerminalForeground(theme.foreground);
+process.once("exit", () => {
+  if (process.stdout.isTTY) process.stdout.write("\x1b[39m");
+});
 
 export function toggleTheme() {
   const fromMode = theme.mode;
@@ -104,6 +115,7 @@ export function toggleTheme() {
     theme.background = interpolateColor(from.background, target.background, eased);
     theme.foreground = interpolateColor(from.foreground, target.foreground, eased);
 
+    setTerminalForeground(theme.foreground);
     notify();
 
     if (progress >= 1) {
@@ -114,6 +126,7 @@ export function toggleTheme() {
       theme.error = target.error;
       theme.background = target.background;
       theme.foreground = target.foreground;
+      setTerminalForeground(theme.foreground);
       notify();
       if (transitionTimer) clearInterval(transitionTimer);
       transitionTimer = undefined;
