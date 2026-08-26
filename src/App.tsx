@@ -16,7 +16,7 @@ import {
 
 import { projects } from "./data/projects.js";
 import { navigationItems } from "./data/navigation.js";
-import { useTheme } from "./theme.js";
+import { theme, useTheme } from "./theme.js";
 
 interface AppProps {
   initialView?: View;
@@ -107,6 +107,7 @@ export default function App({
     <Box
       width="100%"
       height={process.stdout.rows ?? 40}
+      backgroundColor={theme.background}
     >
       {renderContent()}
     </Box>
