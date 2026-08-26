@@ -7,7 +7,6 @@ import Navigation from "../components/Navigation.js";
 import ScrollViewport from "../components/ScrollViewport.js";
 import StatusBar from "../components/StatusBar.js";
 import TerminalLink from "../components/TerminalLink.js";
-import ThemeToggle from "../components/ThemeToggle.js";
 import { useTerminalSize } from "../hooks/useTerminalSize.js";
 import { profile } from "../data/profile.js";
 import { skills } from "../data/skills.js";
@@ -103,21 +102,24 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
         if (characterIndex === 0) {
           deleting = false;
           phraseIndex = (phraseIndex + 1) % phrases.length;
-          pauseUntil = Date.now() + 350;
+          pauseUntil = Date.now() + 450;
         }
       }
-    }, 170);
+    }, 90);
 
     return () => clearInterval(interval);
   }, []);
 
-  const handlePosition = useCallback((id: string, top: number, height: number) => { sectionPositions.current[id] = { top, height }; }, []);
-  const handleHeaderPosition = useCallback((id: string, top: number, height: number) => { headerPositions.current[id] = { top, height }; }, []);
-  const handleFocus = useCallback((id: string) => { pendingFocusRef.current = id; }, []);
+  const handlePosition = useCallback((id: string, position: SectionPosition) => {
+    sectionPositions.current[id] = position;
+  }, []);
 
-  useLayoutEffect(() => {
-    const id = pendingFocusRef.current;
-    if (!id) return;
+  const handleHeaderPosition = useCallback((id: string, position: SectionPosition) => {
+    headerPositions.current[id] = position;
+  }, []);
+
+  const handleFocus = useCallback((id: string) => {
+    pendingFocusRef.current = id;
     const position = sectionPositions.current[id];
     if (!position) return;
     pendingFocusRef.current = null;
@@ -129,7 +131,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
       if (position.top + position.height > visibleBottom) return Math.max(0, Math.min(maxScrollOffsetRef.current, position.top + position.height - viewportHeightNow));
       return current;
     });
-  });
+  }, []);
 
   const toggleSection = useCallback((id: string) => { setCollapsed((current) => ({ ...current, [id]: !current[id] })); }, []);
 
@@ -176,10 +178,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
     <Box width="100%" height={rows} flexDirection="column" flexShrink={0} backgroundColor={theme.background}>
       <Box width="100%" justifyContent="space-between" alignItems="center" flexShrink={0}>
         <Box borderStyle="round" borderColor={theme.muted} paddingX={1}><Text bold>PR</Text></Box>
-        <Box flexDirection="row" gap={1} flexShrink={1}>
-          <Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} />
-          <ThemeToggle />
-        </Box>
+        <Navigation selectedIndex={selectedIndex} activePage="home" onSelect={onNavigate} />
       </Box>
       <Text dimColor>{"─".repeat(96)}</Text>
       <Box ref={viewportRef} width="100%" height={viewportHeight} flexShrink={0} position="relative" overflow="hidden">
@@ -199,7 +198,7 @@ export default function Home({ selectedIndex, onNavigate }: HomeProps) {
             <CollapsibleSection id="section-experience" index={1} title="experience" collapsed={Boolean(collapsed["section-experience"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box width="100%" justifyContent="space-between"><Text bold>{currentRole.company}</Text><Text dimColor>{currentRole.period}</Text></Box><Box width="100%" justifyContent="space-between"><Text dimColor wrap="wrap">{currentRole.role}</Text><Text dimColor wrap="wrap">{currentRole.location}</Text></Box><Text> </Text><Text wrap="wrap">{currentRole.description}</Text><Text> </Text>{currentRole.highlights.map((highlight) => <Text key={highlight} dimColor wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
             <CollapsibleSection id="section-projects" index={2} title="projects" collapsed={Boolean(collapsed["section-projects"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{featuredProjects.map((project) => <Box key={project.id} flexDirection="column" marginBottom={1}><Text bold>{project.name}</Text><Text wrap="wrap">{project.shortDescription}</Text><Text dimColor wrap="wrap">{project.highlights.slice(0, 2).map((item) => `· ${item}`).join("  ")}</Text><Text dimColor wrap="wrap">{project.stack.join(" · ")}</Text></Box>)}</Box></CollapsibleSection>
             <CollapsibleSection id="section-stack" index={3} title="stack" collapsed={Boolean(collapsed["section-stack"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{skills.map((group) => <Box key={group.title} flexDirection="row" width="100%"><Box width={16} flexShrink={0}><Text dimColor>{group.title.toLowerCase()}</Text></Box><Box flexGrow={1}><Text wrap="wrap">{group.skills.join(" · ")}</Text></Box></Box>)}</Box></CollapsibleSection>
-            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
+            <CollapsibleSection id="section-highlights" index={4} title="highlights" collapsed={Boolean(collapsed["section-highlights"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Text wrap="wrap">{profile.highlights.map((highlight) => <Text key={highlight} wrap="wrap">· {highlight}</Text>)}</Box></CollapsibleSection>
             <CollapsibleSection id="section-connect" index={5} title="connect" collapsed={Boolean(collapsed["section-connect"])} onToggle={toggleSection} onFocused={handleFocus} onPosition={handlePosition} onHeaderPosition={handleHeaderPosition}><Box marginTop={1} flexDirection="column"><Box flexDirection="row" gap={2}><TerminalLink url={contact.github}>[ github ]</TerminalLink><TerminalLink url={contact.linkedin}>[ linkedin ]</TerminalLink><TerminalLink url={contact.email}>[ email ]</TerminalLink></Box><Box marginTop={1}><Text dimColor>click to open in your browser</Text></Box></Box></CollapsibleSection>
 
             <Box marginTop={2} paddingX={1} borderStyle="round" borderColor={theme.muted} flexDirection="column"><Text dimColor>“I was not born with a whole lot of natural talent... but I</Text><Text dimColor>work hard and I never give up.”</Text><Box justifyContent="flex-end"><Text dimColor>— Rock Lee</Text></Box></Box>
